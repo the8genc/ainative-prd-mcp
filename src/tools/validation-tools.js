@@ -36,7 +36,7 @@ const VALIDATION_RULES = [
     id: 'has-introduction',
     name: 'Introduction Section',
     description: 'PRD has an introduction or overview section',
-    pattern: /^#{1,3}\s*(introduction|overview|1\.\s)/mi,
+    pattern: /^#{1,3}\s*(\d+\.?\s*)?(introduction|overview)/mi,
     weight: 10,
     category: 'structure'
   },
@@ -44,7 +44,7 @@ const VALIDATION_RULES = [
     id: 'has-problem-statement',
     name: 'Problem Statement',
     description: 'PRD includes a problem statement or motivation',
-    pattern: /^#{1,3}\s*(problem|motivation|why|background)/mi,
+    pattern: /^#{1,3}\s*(\d+\.?\s*)?(problem|motivation|why|background)/mi,
     weight: 10,
     category: 'content'
   },
@@ -68,7 +68,7 @@ const VALIDATION_RULES = [
     id: 'has-features',
     name: 'Features Section',
     description: 'PRD defines core features or requirements',
-    pattern: /^#{1,3}\s*(feature|requirement|functional|core\s*feature)/mi,
+    pattern: /^#{1,3}\s*(\d+\.?\s*)?(feature|requirement|functional|core\s*feature)/mi,
     weight: 10,
     category: 'structure'
   },
@@ -76,7 +76,7 @@ const VALIDATION_RULES = [
     id: 'has-technical-architecture',
     name: 'Technical Architecture',
     description: 'PRD includes technical design or architecture section',
-    pattern: /^#{1,3}\s*(technical|architecture|design|implementation|api|endpoint)/mi,
+    pattern: /^#{1,3}\s*(\d+\.?\s*)?(technical|architecture|design|implementation|api|endpoint)/mi,
     weight: 10,
     category: 'structure'
   },
@@ -100,7 +100,7 @@ const VALIDATION_RULES = [
     id: 'has-timeline',
     name: 'Timeline',
     description: 'PRD includes timeline, milestones, or schedule',
-    pattern: /^#{1,3}\s*(timeline|milestone|schedule|roadmap|delivery)/mi,
+    pattern: /^#{1,3}\s*(\d+\.?\s*)?(timeline|milestone|schedule|roadmap|delivery)/mi,
     weight: 5,
     category: 'structure'
   },

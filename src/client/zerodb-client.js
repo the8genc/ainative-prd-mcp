@@ -155,14 +155,20 @@ export class ZeroDBClient {
 
   // Memory operations (for PRD search and recall)
   async storeMemory(content, sessionId, tags = [], metadata = {}) {
+    const namespace = sessionId ? `session:${sessionId}` : 'global';
     return this.request('POST', '/api/v1/public/memory/v2/remember', {
-      content, session_id: sessionId, tags, metadata, role: 'assistant'
+      content,
+      namespace,
+      tags,
+      metadata,
+      memory_type: 'episodic',
+      importance: 0.7
     });
   }
 
   async searchMemory(query, limit = 10, scope = 'agent') {
     return this.request('POST', '/api/v1/public/memory/v2/recall', {
-      query, limit, scope
+      query, limit, namespace: 'global'
     });
   }
 

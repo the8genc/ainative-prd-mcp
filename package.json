@@ -1,6 +1,6 @@
 {
   "name": "ainative-prd-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "AINative PRD Generator MCP Server — Generate, validate, and manage Product Requirement Documents with full AINative platform awareness and ZeroMemory persistence",
   "type": "module",
   "main": "index.js",
