@@ -18,10 +18,13 @@ export function getPool() {
   const useSsl =
     !/localhost|127\.0\.0\.1/.test(config.databaseUrl) &&
     process.env.PGSSL !== 'disable';
+  // Managed DBs (Railway/DO) present self-signed proxy certs, so default to not
+  // rejecting; set PG_REJECT_UNAUTHORIZED=true to enforce full cert validation.
+  const rejectUnauthorized = process.env.PG_REJECT_UNAUTHORIZED === 'true';
 
   pool = new pg.Pool({
     connectionString: config.databaseUrl,
-    ssl: useSsl ? { rejectUnauthorized: false } : false,
+    ssl: useSsl ? { rejectUnauthorized } : false,
     max: parseInt(process.env.PG_POOL_MAX || '10', 10),
     idleTimeoutMillis: 30000
   });

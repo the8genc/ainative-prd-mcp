@@ -17,9 +17,12 @@
 
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { requireBearerAuth } from '@modelcontextprotocol/sdk/server/auth/middleware/bearerAuth.js';
 import { mountPortalStatic } from '../portal/static.js';
+import { query } from '../db/pool.js';
 
 function toWebRequest(req) {
   const proto = req.headers['x-forwarded-proto'] || (req.socket?.encrypted ? 'https' : 'http');
@@ -68,6 +71,21 @@ async function writeWebResponse(webRes, res) {
 export async function startHttpServer({ createServer, port, host = '0.0.0.0', serverName, version, auth = null }) {
   const app = express();
   app.set('trust proxy', 1); // Railway terminates TLS; needed for secure cookies + rate-limit IPs
+  app.disable('x-powered-by');
+
+  // Safe security headers globally (HSTS, nosniff, frameguard DENY, no-referrer).
+  // CSP/CORP/COOP are disabled globally so cross-origin MCP clients can still
+  // fetch /.well-known + /token; a tailored CSP is applied to the /access SPA below.
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginResourcePolicy: false,
+      crossOriginOpenerPolicy: false,
+      crossOriginEmbedderPolicy: false,
+      frameguard: { action: 'deny' },
+      hsts: { maxAge: 31536000, includeSubDomains: true, preload: true }
+    })
+  );
   app.use(express.json({ limit: '4mb' }));
   app.use(cookieParser());
 
@@ -79,28 +97,50 @@ export async function startHttpServer({ createServer, port, host = '0.0.0.0', se
   // Portal REST API.
   if (auth?.portalApiRouter) app.use('/access/api', auth.portalApiRouter);
 
-  // Health / landing (always public — Railway healthcheck).
-  const info = (_req, res) =>
-    res.json({
+  // Landing (lightweight, always 200).
+  app.get('/', (_req, res) =>
+    res.json({ name: serverName, version, transport: 'streamable-http', endpoint: '/mcp', authenticated: !!auth?.verifier, status: 'ok' })
+  );
+
+  // Health check — verifies DB connectivity when auth is enabled so the platform
+  // returns 503 (and Railway can react) if Postgres is unreachable.
+  app.get('/health', async (_req, res) => {
+    let db_ok = true;
+    if (auth?.verifier) {
+      try { await query('SELECT 1'); } catch { db_ok = false; }
+    }
+    res.status(db_ok ? 200 : 503).json({
       name: serverName,
       version,
       transport: 'streamable-http',
       endpoint: '/mcp',
       authenticated: !!auth?.verifier,
-      status: 'ok'
+      db_ok,
+      status: db_ok ? 'ok' : 'degraded'
     });
-  app.get('/', info);
-  app.get('/health', info);
+  });
 
   // MCP endpoint — stateless: one Server + transport per request.
   // When auth is enabled, requireBearerAuth runs first and sets req.auth.
   const mcpChain = [];
   if (auth?.verifier) {
+    // Auth first (sets req.auth), then a per-credential rate limit keyed on the
+    // OAuth client / PAT id (falls back to IP if somehow unset).
     mcpChain.push(
       requireBearerAuth({
         verifier: auth.verifier,
         requiredScopes: ['mcp:tools'],
         ...(auth.resourceMetadataUrl ? { resourceMetadataUrl: auth.resourceMetadataUrl } : {})
+      })
+    );
+    mcpChain.push(
+      rateLimit({
+        windowMs: 60 * 1000,
+        max: parseInt(process.env.MCP_RATE_LIMIT_PER_MIN || '600', 10),
+        standardHeaders: true,
+        legacyHeaders: false,
+        keyGenerator: (req) => req.auth?.clientId || ipKeyGenerator(req.ip),
+        message: { jsonrpc: '2.0', error: { code: -32029, message: 'Rate limit exceeded' }, id: null }
       })
     );
   }
@@ -133,6 +173,24 @@ export async function startHttpServer({ createServer, port, host = '0.0.0.0', se
   });
   app.post('/mcp', ...mcpChain);
 
+  // Tailored CSP for the SPA + portal API (same-origin app; no inline scripts).
+  app.use(
+    '/access',
+    helmet.contentSecurityPolicy({
+      useDefaults: true,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:'],
+        connectSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        frameAncestors: ["'none'"],
+        baseUri: ["'self'"]
+      }
+    })
+  );
+
   // Static React portal at /access (SPA fallback scoped to /access/* — mounted
   // after /mcp and the well-known/API routes so it cannot shadow them).
   mountPortalStatic(app);
@@ -146,6 +204,16 @@ export async function startHttpServer({ createServer, port, host = '0.0.0.0', se
     });
   app.get('/mcp', methodNotAllowed);
   app.delete('/mcp', methodNotAllowed);
+
+  // Final JSON error handler — catches thrown/async errors from the portal API
+  // (and any route) so clients get JSON, never an HTML 500 with a stack trace.
+  // eslint-disable-next-line no-unused-vars
+  app.use((err, req, res, next) => {
+    console.error(`[${serverName}] unhandled error on ${req.method} ${req.path}:`, err?.message);
+    if (res.headersSent) return;
+    const status = Number.isInteger(err?.status) ? err.status : 500;
+    res.status(status).json({ error: status === 500 ? 'internal_error' : (err.code || 'error') });
+  });
 
   await new Promise((resolve) => app.listen(port, host, resolve));
   return { port, host };

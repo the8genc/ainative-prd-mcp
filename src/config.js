@@ -25,8 +25,10 @@ const PUBLIC_BASE_URL = (
 // survive a restart, which is fine for development).
 let jwtSecret = process.env.JWT_SECRET;
 if (!jwtSecret) {
-  if (process.env.NODE_ENV === 'production') {
-    console.error('  WARNING: JWT_SECRET is not set in production — using an ephemeral secret. Set JWT_SECRET.');
+  // In production a stable secret is mandatory (an ephemeral one would invalidate
+  // every session/token on each restart and differ across instances).
+  if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL) {
+    throw new Error('JWT_SECRET is required in production. Set a long random JWT_SECRET and restart.');
   }
   jwtSecret = randomBytes(48).toString('hex');
 }
@@ -43,7 +45,7 @@ export const config = {
   },
 
   jwtSecret,
-  sessionTtlSeconds: parseInt(process.env.SESSION_TTL_SECONDS || `${12 * 3600}`, 10),
+  sessionTtlSeconds: parseInt(process.env.SESSION_TTL_SECONDS || `${4 * 3600}`, 10),
   accessTokenTtlSeconds: parseInt(process.env.ACCESS_TOKEN_TTL_SECONDS || '3600', 10),
   cookieSecure: bool(process.env.SESSION_COOKIE_SECURE, PUBLIC_BASE_URL.startsWith('https://')),
 

@@ -10,6 +10,7 @@
 
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
+import rateLimit from 'express-rate-limit';
 import { Google, GitHub, decodeIdToken, generateState, generateCodeVerifier } from 'arctic';
 import { config } from '../config.js';
 import { setSessionCookie } from './session.js';
@@ -44,14 +45,26 @@ function readTx(req) {
   } catch { return null; }
 }
 
-async function uniqueUsername(base) {
-  const clean = (base || 'user').toLowerCase().replace(/[^a-z0-9_.-]+/g, '').slice(0, 32) || 'user';
-  if (!(await users.findByUsername(clean))) return clean;
-  for (let i = 0; i < 5; i++) {
-    const candidate = `${clean}-${Math.random().toString(36).slice(2, 6)}`;
-    if (!(await users.findByUsername(candidate))) return candidate;
+function candidateUsername(base) {
+  return (base || 'user').toLowerCase().replace(/[^a-z0-9_.-]+/g, '').slice(0, 32) || 'user';
+}
+
+/** Create a pending social user, retrying on username collisions (DB unique constraint is the backstop). */
+async function createSocialUser({ base, email }) {
+  const clean = candidateUsername(base);
+  for (let i = 0; i < 8; i++) {
+    const username = i === 0 ? clean : `${clean}-${Math.random().toString(36).slice(2, 6)}`;
+    try {
+      return await users.createUser({
+        username, email: email || null, passwordHash: null,
+        status: 'pending', role: 'user', emailVerified: !!email
+      });
+    } catch (err) {
+      if (err?.code === '23505') continue; // username/email collision — try another username
+      throw err;
+    }
   }
-  return `${clean}-${Date.now().toString(36)}`;
+  throw new Error('Could not allocate a unique username for social account');
 }
 
 /** Find existing user by identity or email; otherwise create a pending one. Returns the user. */
@@ -61,14 +74,7 @@ async function resolveUser({ provider, providerUserId, email, displayName }) {
 
   let user = email ? await users.findByEmail(email) : null;
   if (!user) {
-    user = await users.createUser({
-      username: await uniqueUsername(displayName || (email ? email.split('@')[0] : provider)),
-      email: email || null,
-      passwordHash: null,
-      status: 'pending',
-      role: 'user',
-      emailVerified: !!email
-    });
+    user = await createSocialUser({ base: displayName || (email ? email.split('@')[0] : provider), email });
   }
   await identities.link({ userId: user.id, provider, providerUserId });
   return user;
@@ -105,8 +111,15 @@ export function socialStartRoutes() {
 // ── Callback routes (mounted at root: /auth/:provider/callback) ──
 export function socialCallbackRoutes() {
   const router = Router();
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 60,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'too_many_requests' }
+  });
 
-  router.get('/auth/:provider/callback', async (req, res) => {
+  router.get('/auth/:provider/callback', limiter, async (req, res) => {
     const provider = req.params.provider;
     const code = String(req.query.code || '');
     const state = String(req.query.state || '');

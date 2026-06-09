@@ -43,6 +43,20 @@ export function requireSession() {
   };
 }
 
+/**
+ * Block privileged/state-changing actions until a forced password change is done.
+ * Run after requireSession()/requireAdmin(). Allows the user to still hit
+ * /me and /change-password so they can resolve it.
+ */
+export function requirePasswordChange() {
+  return (req, res, next) => {
+    if (req.sessionUser?.must_change_password) {
+      return res.status(409).json({ error: 'must_change_password' });
+    }
+    next();
+  };
+}
+
 /** Require an admin. */
 export function requireAdmin() {
   return async (req, res, next) => {
