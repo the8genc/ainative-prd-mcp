@@ -20,21 +20,20 @@ export function createOAuthProvider(deps) {
     baseUrl, accessTtlSeconds, refreshTtlSeconds = 30 * 24 * 3600, scope = 'mcp:tools'
   } = deps;
 
-  function mintTokens({ userId, clientId, scopes, resource }) {
+  async function mintTokens({ userId, clientId, scopes, resource, familyId = null }) {
     const access_token = signAccessToken({ userId, clientId, scopes, resource });
     const raw = randomToken(32);
-    return refresh
-      .create({
-        userId, clientId, tokenHash: sha256(raw), scopes, resource,
-        expiresAt: new Date(Date.now() + refreshTtlSeconds * 1000)
-      })
-      .then(() => ({
-        access_token,
-        token_type: 'bearer',
-        expires_in: accessTtlSeconds,
-        scope: scopes.join(' '),
-        refresh_token: raw
-      }));
+    await refresh.create({
+      userId, clientId, tokenHash: sha256(raw), scopes, resource, familyId,
+      expiresAt: new Date(Date.now() + refreshTtlSeconds * 1000)
+    });
+    return {
+      access_token,
+      token_type: 'bearer',
+      expires_in: accessTtlSeconds,
+      scope: scopes.join(' '),
+      refresh_token: raw
+    };
   }
 
   const provider = {
@@ -73,12 +72,19 @@ export function createOAuthProvider(deps) {
     async exchangeRefreshToken(client, refreshToken, scopes) {
       const hash = sha256(refreshToken);
       const row = await refresh.findValid(hash);
-      if (!row || row.client_id !== client.client_id) throw new InvalidGrantError('Invalid refresh token');
+      if (!row) {
+        // Reuse detection: a token that exists but is already revoked/expired means
+        // a replay — revoke the whole rotation family as a precaution.
+        const stale = await refresh.findAnyByHash(hash);
+        if (stale?.family_id) await refresh.revokeFamily(stale.family_id);
+        throw new InvalidGrantError('Invalid refresh token');
+      }
+      if (row.client_id !== client.client_id) throw new InvalidGrantError('Invalid refresh token');
       const user = await findUserById(row.user_id);
       if (!user || user.status !== 'approved') throw new InvalidGrantError('Account is not approved');
-      await refresh.revokeByHash(hash); // rotation
+      await refresh.revokeByHash(hash); // rotate out the used token
       const grantScopes = scopes?.length ? scopes : row.scopes;
-      return mintTokens({ userId: user.id, clientId: client.client_id, scopes: grantScopes, resource: row.resource });
+      return mintTokens({ userId: user.id, clientId: client.client_id, scopes: grantScopes, resource: row.resource, familyId: row.family_id });
     },
 
     async verifyAccessToken(token) {
@@ -112,7 +118,7 @@ export function createOAuthProvider(deps) {
       codeChallenge: ticketClaims.codeChallenge,
       scopes: ticketClaims.scopes || [scope],
       resource: ticketClaims.resource,
-      expiresAt: new Date(Date.now() + 60 * 1000)
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000)
     });
     const url = new URL(ticketClaims.redirectUri);
     url.searchParams.set('code', code);

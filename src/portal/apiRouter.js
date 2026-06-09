@@ -16,7 +16,7 @@ import * as pats from '../db/repositories/personalTokens.js';
 import * as emailTokens from '../db/repositories/emailTokens.js';
 import { hashPassword, verifyPassword, validatePasswordStrength } from '../auth/passwords.js';
 import { generatePat, randomToken, sha256 } from '../auth/tokens.js';
-import { setSessionCookie, clearSessionCookie, requireSession, requireAdmin } from '../auth/session.js';
+import { setSessionCookie, clearSessionCookie, requireSession, requireAdmin, requirePasswordChange } from '../auth/session.js';
 import { loginLimiter, registerLimiter, passwordResetLimiter } from '../auth/rateLimit.js';
 import { sendEmail, portalLink } from '../email/sender.js';
 import { socialStartRoutes, socialEnabled } from '../auth/social.js';
@@ -148,7 +148,7 @@ export function createPortalApiRouter({ oauth = null } = {}) {
     ok(res, { tokens: await pats.listForUser(req.sessionUser.id) })
   );
 
-  router.post('/tokens', requireSession(), async (req, res) => {
+  router.post('/tokens', requireSession(), requirePasswordChange(), async (req, res) => {
     const name = String(req.body?.name || 'token').slice(0, 60);
     const { token, hash } = generatePat();
     const row = await pats.createToken({ userId: req.sessionUser.id, name, tokenHash: hash });
@@ -156,20 +156,26 @@ export function createPortalApiRouter({ oauth = null } = {}) {
     return ok(res, { id: row.id, name: row.name, token, message: 'Copy this token now — it will not be shown again.' });
   });
 
-  router.delete('/tokens/:id', requireSession(), async (req, res) => {
+  router.delete('/tokens/:id', requireSession(), requirePasswordChange(), async (req, res) => {
     const revoked = await pats.revoke(req.params.id, req.sessionUser.id);
     if (!revoked) return fail(res, 404, 'not_found');
     return ok(res);
   });
 
   // ── Admin ─────────────────────────────────────────────────────
-  router.get('/admin/users', requireAdmin(), async (req, res) => {
-    const status = req.query.status ? String(req.query.status) : null;
+  const statusEnum = z.enum(['pending', 'approved', 'blocked']);
+  router.get('/admin/users', requireAdmin(), requirePasswordChange(), async (req, res) => {
+    let status = null;
+    if (req.query.status != null) {
+      const parsed = statusEnum.safeParse(String(req.query.status));
+      if (!parsed.success) return fail(res, 400, 'invalid_status');
+      status = parsed.data;
+    }
     const list = await users.listUsers({ status });
     return ok(res, { users: list.map(users.publicUser) });
   });
 
-  const adminAction = (fn) => [requireAdmin(), async (req, res) => {
+  const adminAction = (fn) => [requireAdmin(), requirePasswordChange(), async (req, res) => {
     const target = await users.findById(req.params.id);
     if (!target) return fail(res, 404, 'user_not_found');
     return fn(req, res, target);
@@ -201,7 +207,20 @@ export function createPortalApiRouter({ oauth = null } = {}) {
     const temp = randomToken(9);
     await users.setPassword(t.id, await hashPassword(temp), { clearMustChange: false });
     await markMustChange(t.id);
-    return ok(res, { tempPassword: temp, message: 'Share this temporary password; the user must change it on next login.' });
+    let emailed = false;
+    if (t.email) {
+      try {
+        await sendEmail({
+          to: t.email,
+          subject: 'Your 8genC password was reset',
+          text: `An administrator reset your password.\n\nTemporary password: ${temp}\n\nLog in at ${portalLink('/login')} and change it immediately.\n`
+        });
+        emailed = true;
+      } catch (err) {
+        console.error('[portal] reset-password email failed:', err.message);
+      }
+    }
+    return ok(res, { tempPassword: temp, emailed, message: 'Temporary password set; the user must change it on next login.' });
   }));
 
   // ── OAuth (authorization-server) consent + social login (PR3) ──

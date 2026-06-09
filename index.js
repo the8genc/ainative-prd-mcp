@@ -46,6 +46,8 @@ import { ZeroDBClient } from './src/client/zerodb-client.js';
 import { SkillsClient } from './src/skills/skills-client.js';
 import { startHttpServer } from './src/transport/http.js';
 import { config } from './src/config.js';
+import { closePool } from './src/db/pool.js';
+import { startCleanup } from './src/db/cleanup.js';
 import { buildAuth } from './src/auth/buildAuth.js';
 
 // Load .env
@@ -244,6 +246,7 @@ async function main() {
       console.error('  Auth DISABLED (no DATABASE_URL): /mcp is open. Set DATABASE_URL to protect it.\n');
     }
     await startHttpServer({ createServer, port, serverName: SERVER_NAME, version: PKG_VERSION, auth });
+    if (auth) startCleanup(); // daily sweep of expired auth rows
     console.error(`  MCP Server listening on http://0.0.0.0:${port}/mcp (${ALL_TOOLS.length} tools)\n`);
   } else {
     const server = createServer();
@@ -252,15 +255,17 @@ async function main() {
   }
 }
 
-// Graceful shutdown
-process.on('SIGINT', () => {
+// Graceful shutdown — close the DB pool so connections drain cleanly.
+let shuttingDown = false;
+async function shutdown() {
+  if (shuttingDown) return;
+  shuttingDown = true;
   console.error('\n  Shutting down...');
+  try { await closePool(); } catch { /* ignore */ }
   process.exit(0);
-});
-process.on('SIGTERM', () => {
-  console.error('\n  Shutting down...');
-  process.exit(0);
-});
+}
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
 
 main().catch((err) => {
   console.error(`[${SERVER_NAME}] Fatal error:`, err.message);
