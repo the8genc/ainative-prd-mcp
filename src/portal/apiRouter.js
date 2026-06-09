@@ -251,6 +251,10 @@ export function createPortalApiRouter({ oauth = null } = {}) {
     });
   }
 
+  // JSON 404 for any unmatched /access/api/* route (keeps the API JSON-only;
+  // no HTML/default error page). Must be the last handler on this router.
+  router.use((_req, res) => res.status(404).json({ error: 'not_found' }));
+
   return router;
 }
 
