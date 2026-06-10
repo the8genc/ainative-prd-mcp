@@ -1,6 +1,7 @@
 /* Split-auth layout: tactical brand panel (left) + form card (right).
    Wraps every public auth view (login/register/verify/reset/status). */
 const MOTIF = `${import.meta.env.BASE_URL}assets/technology.png`;
+const WORDMARK = `${import.meta.env.BASE_URL}assets/8genc-wordmark-white.png`;
 
 export default function AuthShell({ children, sub = 'Authorized personnel only. Every account is reviewed before it can put an agent on the 8genC MCP server.' }) {
   return (
@@ -8,7 +9,7 @@ export default function AuthShell({ children, sub = 'Authorized personnel only. 
       <header className="site-header">
         <div className="container site-header__bar">
           <a href="/" className="wordmark" aria-label="8genC home">
-            8<span className="mk-accent">gen</span>C<span className="wordmark__sub">Access</span>
+            <img className="wordmark__img" src={WORDMARK} alt="8genC" /><span className="wordmark__sub">Access</span>
           </a>
           <nav className="nav" aria-label="Primary">
             <a href="/" className="nav__link" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>← Back to site</a>

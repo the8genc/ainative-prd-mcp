@@ -10,7 +10,7 @@ export default function Layout({ children }) {
     <>
       <header className="site-header">
         <div className="container site-header__bar">
-          <a href="/" className="wordmark" aria-label="8genC home">8<span className="mk-accent">gen</span>C<span className="wordmark__sub">Access</span></a>
+          <a href="/" className="wordmark" aria-label="8genC home"><img className="wordmark__img" src={`${import.meta.env.BASE_URL}assets/8genc-wordmark-white.png`} alt="8genC" /><span className="wordmark__sub">Access</span></a>
           <nav className="nav" aria-label="Primary">
             <ul className="nav__links">
               {user && <li><Link className="nav__link" to="/">Dashboard</Link></li>}
