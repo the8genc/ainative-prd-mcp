@@ -19,7 +19,10 @@ import ChangePassword from './routes/ChangePassword.jsx';
 import Dashboard from './routes/Dashboard.jsx';
 import Tokens from './routes/Tokens.jsx';
 import Profile from './routes/Profile.jsx';
+import MyAccess from './routes/MyAccess.jsx';
 import AdminUsers from './routes/admin/Users.jsx';
+import AdminSkills from './routes/admin/Skills.jsx';
+import UserAccess from './routes/admin/UserAccess.jsx';
 
 const withLayout = (el) => <Layout>{el}</Layout>;
 
@@ -41,9 +44,12 @@ createRoot(document.getElementById('root')).render(
           <Route path="/" element={<RequireAuth>{withLayout(<Dashboard />)}</RequireAuth>} />
           <Route path="/tokens" element={<RequireAuth>{withLayout(<Tokens />)}</RequireAuth>} />
           <Route path="/profile" element={<RequireAuth>{withLayout(<Profile />)}</RequireAuth>} />
+          <Route path="/my-access" element={<RequireAuth>{withLayout(<MyAccess />)}</RequireAuth>} />
 
           {/* Admin */}
           <Route path="/admin/users" element={<RequireAdmin>{withLayout(<AdminUsers />)}</RequireAdmin>} />
+          <Route path="/admin/users/:id" element={<RequireAdmin>{withLayout(<UserAccess />)}</RequireAdmin>} />
+          <Route path="/admin/skills" element={<RequireAdmin>{withLayout(<AdminSkills />)}</RequireAdmin>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../../api.js';
 import { useAuth } from '../../auth/AuthContext.jsx';
 import Icon from '../../components/Icon.jsx';
@@ -73,6 +74,7 @@ export default function AdminUsers() {
                         <button className="iconbtn" disabled={!u.email_verified} title={u.email_verified ? '' : 'User must verify email first'} onClick={() => act(u.id, 'elevate')}>Make admin</button>
                       )}
                       {u.role === 'admin' && !self && <button className="iconbtn" onClick={() => act(u.id, 'demote')}>Demote</button>}
+                      <Link className="iconbtn" to={`/admin/users/${u.id}`}>Access →</Link>
                     </div>
                   </td>
                 </tr>

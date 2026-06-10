@@ -14,6 +14,12 @@ import { z } from 'zod';
 import * as users from '../db/repositories/users.js';
 import * as pats from '../db/repositories/personalTokens.js';
 import * as emailTokens from '../db/repositories/emailTokens.js';
+import * as skillsCatalog from '../db/repositories/skillsCatalog.js';
+import * as skillAccess from '../db/repositories/skillAccess.js';
+import * as clientContexts from '../db/repositories/clientContexts.js';
+import { syncCatalog } from '../skills/catalogSync.js';
+import { decideSlug } from '../auth/access.js';
+import { config } from '../config.js';
 import { hashPassword, verifyPassword, validatePasswordStrength } from '../auth/passwords.js';
 import { generatePat, randomToken, sha256 } from '../auth/tokens.js';
 import { setSessionCookie, clearSessionCookie, requireSession, requireAdmin, requirePasswordChange } from '../auth/session.js';
@@ -33,7 +39,7 @@ function uniqueViolation(err) {
   return err && err.code === '23505';
 }
 
-export function createPortalApiRouter({ oauth = null } = {}) {
+export function createPortalApiRouter({ oauth = null, skills = null } = {}) {
   const router = Router();
 
   // ── Register ──────────────────────────────────────────────────
@@ -66,6 +72,12 @@ export function createPortalApiRouter({ oauth = null } = {}) {
     }
 
     await issueEmailToken(user, 'verify', 'Verify your 8genC account', '/verify-email');
+    // Notify the admin inbox that a new account is awaiting approval.
+    queueEmail({
+      to: config.adminNotifyEmail,
+      subject: `New 8genC signup pending approval: ${username}`,
+      text: `A new account has registered and is pending admin approval.\n\nUsername: ${username}\nEmail: ${email}\n\nReview & approve: ${portalLink('/admin/users')}\n`
+    });
     return ok(res, { user: users.publicUser(user), message: 'Registered. Check email to verify; an admin must approve your account before MCP access.' });
   });
 
@@ -221,6 +233,104 @@ export function createPortalApiRouter({ oauth = null } = {}) {
     }
     return ok(res, { tempPassword: temp, message: 'Temporary password set; the user must change it on next login.' });
   }));
+
+  // ── Admin: skills catalog (tiers + enabled) ───────────────────
+  router.get('/admin/skills', requireAdmin(), requirePasswordChange(), async (_req, res) =>
+    ok(res, { skills: await skillsCatalog.listCatalog() })
+  );
+
+  const skillPatchSchema = z.object({
+    tier: z.enum(['admin', 'consultant', 'client']).nullable().optional(),
+    enabled: z.boolean().optional()
+  });
+  router.patch('/admin/skills/:id', requireAdmin(), requirePasswordChange(), async (req, res) => {
+    const parsed = skillPatchSchema.safeParse(req.body);
+    if (!parsed.success) return fail(res, 400, 'invalid_input');
+    let row = await skillsCatalog.getById(req.params.id);
+    if (!row) return fail(res, 404, 'skill_not_found');
+    if ('tier' in parsed.data) row = await skillsCatalog.setTier(req.params.id, parsed.data.tier ?? null);
+    if (parsed.data.enabled !== undefined) row = await skillsCatalog.setEnabled(req.params.id, parsed.data.enabled);
+    return ok(res, { skill: row });
+  });
+
+  router.post('/admin/skills/rescan', requireAdmin(), requirePasswordChange(), async (_req, res) => {
+    if (!skills) return fail(res, 503, 'skills_client_unavailable');
+    const result = await syncCatalog(skills);
+    return ok(res, { ...result, skills: await skillsCatalog.listCatalog() });
+  });
+
+  // ── Admin: per-user role, skill overrides, client data-scope ───
+  const roleSchema = z.object({ role: z.enum(['user', 'consultant', 'client', 'admin']) });
+  router.post('/admin/users/:id/role', ...adminAction(async (req, res, t) => {
+    const parsed = roleSchema.safeParse(req.body);
+    if (!parsed.success) return fail(res, 400, 'invalid_role');
+    const role = parsed.data.role;
+    if (role === 'admin' && !t.email_verified) {
+      return fail(res, 400, 'email_not_verified', { message: 'User must verify their email before being made admin.' });
+    }
+    if (role !== 'admin' && t.id === req.sessionUser.id) {
+      return fail(res, 400, 'cannot_change_own_role', { message: 'Use another admin to change your own role.' });
+    }
+    return ok(res, { user: users.publicUser(await users.setRole(t.id, role)) });
+  }));
+
+  router.get('/admin/users/:id/access', ...adminAction(async (_req, res, t) => {
+    const [catalog, overrides, context] = await Promise.all([
+      skillsCatalog.listCatalog(),
+      skillAccess.listOverrides(t.id),
+      clientContexts.get(t.id)
+    ]);
+    return ok(res, { user: users.publicUser(t), catalog, overrides, context });
+  }));
+
+  const overrideSchema = z.object({
+    skillId: z.string().uuid(),
+    effect: z.enum(['allow', 'deny']).nullable()
+  });
+  router.put('/admin/users/:id/overrides', ...adminAction(async (req, res, t) => {
+    const parsed = overrideSchema.safeParse(req.body);
+    if (!parsed.success) return fail(res, 400, 'invalid_input');
+    const row = await skillAccess.setOverride(t.id, parsed.data.skillId, parsed.data.effect, req.sessionUser.id);
+    return ok(res, { override: row });
+  }));
+
+  const contextSchema = z.object({
+    coda_files: z
+      .array(z.object({ doc_id: z.string().optional(), url: z.string().optional(), label: z.string().optional() }))
+      .max(100)
+      .optional(),
+    variables: z.record(z.any()).optional(),
+    notes: z.string().max(5000).nullable().optional()
+  });
+  router.put('/admin/users/:id/context', ...adminAction(async (req, res, t) => {
+    const parsed = contextSchema.safeParse(req.body);
+    if (!parsed.success) return fail(res, 400, 'invalid_input', { details: parsed.error.flatten() });
+    const row = await clientContexts.upsert(
+      t.id,
+      {
+        coda_files: parsed.data.coda_files ?? [],
+        variables: parsed.data.variables ?? {},
+        notes: parsed.data.notes ?? null
+      },
+      req.sessionUser.id
+    );
+    return ok(res, { context: row });
+  }));
+
+  // ── Self: my access (read-only) ───────────────────────────────
+  router.get('/me/access', requireSession(), async (req, res) => {
+    const u = req.sessionUser;
+    const me = { userId: u.id, role: u.role, owner: false };
+    const [accessSet, context, catalog] = await Promise.all([
+      skillAccess.loadAccessSet(u.id),
+      clientContexts.get(u.id),
+      skillsCatalog.listCatalog()
+    ]);
+    const accessible = catalog
+      .filter((s) => decideSlug(me, s.slug, accessSet, config.rbacDefaultTier))
+      .map((s) => ({ slug: s.slug, name: s.name, description: s.description, tier: s.tier }));
+    return ok(res, { role: u.role, skills: accessible, context });
+  });
 
   // ── OAuth (authorization-server) consent + social login (PR3) ──
   // Which social providers are configured (public — used by the login UI).

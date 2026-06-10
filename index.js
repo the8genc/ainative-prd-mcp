@@ -34,9 +34,15 @@ import { webcrypto } from 'node:crypto';
 // runtimes (e.g. Railway's default Node) regardless of version.
 if (!globalThis.crypto) globalThis.crypto = webcrypto;
 
+import dns from 'node:dns';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import dotenv from 'dotenv';
 import { createRequire } from 'module';
+
+// Prefer IPv4 in DNS resolution. Railway containers have no IPv6 egress, so a
+// verbatim/AAAA-first lookup (Node's default) makes outbound TLS/SMTP fail with
+// ENETUNREACH — notably Gmail SMTP for the portal's verification/reset emails.
+dns.setDefaultResultOrder('ipv4first');
 
 const require = createRequire(import.meta.url);
 const { version: PKG_VERSION } = require('./package.json');
@@ -237,7 +243,7 @@ async function main() {
     let auth = null;
     if (config.authEnabled) {
       try {
-        auth = await buildAuth();
+        auth = await buildAuth({ skills });
         console.error('  Auth enabled: /mcp requires an approved credential; portal at /access\n');
       } catch (err) {
         console.error(`  AUTH INIT FAILED (${err.message}). Refusing to start an unprotected server.`);
