@@ -25,7 +25,7 @@ import * as clients from '../db/repositories/oauthClients.js';
 import * as codes from '../db/repositories/authCodes.js';
 import * as refresh from '../db/repositories/refreshTokens.js';
 
-export async function buildAuth() {
+export async function buildAuth({ skills = null } = {}) {
   if (!config.authEnabled) return null;
 
   await runMigrations();
@@ -49,7 +49,8 @@ export async function buildAuth() {
   });
 
   const portalApiRouter = createPortalApiRouter({
-    oauth: { mintCodeForApprovedUser, describeTicket, verifyTicket }
+    oauth: { mintCodeForApprovedUser, describeTicket, verifyTicket },
+    skills
   });
 
   const oauthRouter = mcpAuthRouter({

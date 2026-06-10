@@ -236,7 +236,7 @@ async function main() {
     let auth = null;
     if (config.authEnabled) {
       try {
-        auth = await buildAuth();
+        auth = await buildAuth({ skills });
         console.error('  Auth enabled: /mcp requires an approved credential; portal at /access\n');
       } catch (err) {
         console.error(`  AUTH INIT FAILED (${err.message}). Refusing to start an unprotected server.`);
