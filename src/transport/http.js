@@ -22,6 +22,7 @@ import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { requireBearerAuth } from '@modelcontextprotocol/sdk/server/auth/middleware/bearerAuth.js';
 import { mountPortalStatic } from '../portal/static.js';
+import { mountMarketing } from '../site/marketing.js';
 import { query } from '../db/pool.js';
 
 function toWebRequest(req) {
@@ -97,10 +98,10 @@ export async function startHttpServer({ createServer, port, host = '0.0.0.0', se
   // Portal REST API.
   if (auth?.portalApiRouter) app.use('/access/api', auth.portalApiRouter);
 
-  // Landing (lightweight, always 200).
-  app.get('/', (_req, res) =>
-    res.json({ name: serverName, version, transport: 'streamable-http', endpoint: '/mcp', authenticated: !!auth?.verifier, status: 'ok' })
-  );
+  // GET / serves the marketing home (mounted near the end); this is the JSON
+  // fallback used only if the static site bundle is absent.
+  const landingFallback = (_req, res) =>
+    res.json({ name: serverName, version, transport: 'streamable-http', endpoint: '/mcp', authenticated: !!auth?.verifier, status: 'ok' });
 
   // Health check — verifies DB connectivity when auth is enabled so the platform
   // returns 503 (and Railway can react) if Postgres is unreachable.
@@ -194,6 +195,11 @@ export async function startHttpServer({ createServer, port, host = '0.0.0.0', se
   // Static React portal at /access (SPA fallback scoped to /access/* — mounted
   // after /mcp and the well-known/API routes so it cannot shadow them).
   mountPortalStatic(app);
+
+  // Marketing site (home/docs/tools) at the root + design-system assets. Mounted
+  // last (before 405/error handlers) so it never shadows /mcp, /.well-known,
+  // /access, /access/api, or /health.
+  mountMarketing(app, { fallbackInfo: landingFallback });
 
   // Stateless mode has no server-initiated stream / session to tear down.
   const methodNotAllowed = (_req, res) =>

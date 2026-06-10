@@ -1,0 +1,198 @@
+<!-- @dsCard group="MCP Site" viewport="1280x900" name="Tools — Capability catalog" subtitle="All 8 tools, the skills library, and 22 AINative services" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>8genC MCP · Capability Catalog</title>
+<meta name="description" content="The full 8genC MCP capability catalog — 8 tools across platform discovery and Agent Skills, 22 AINative services, and the GitHub-backed skills library." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="/styles.css" />
+<link rel="stylesheet" href="/site.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container site-header__bar">
+    <a href="/" class="wordmark" aria-label="8genC home">8<span class="mk-accent">gen</span>C<span class="wordmark__sub">MCP</span></a>
+    <nav class="nav" aria-label="Primary">
+      <ul class="nav__links">
+        <li><a class="nav__link" href="/">Overview</a></li>
+        <li><a class="nav__link" href="/docs">Connect</a></li>
+        <li><a class="nav__link nav__link--active" href="/tools">Tools</a></li>
+        <li><a class="nav__link" href="/#status">Status</a></li>
+        <li><a class="nav__link" href="/access">Access</a></li>
+      </ul>
+      <a href="/access" class="btn btn--signal">Request access</a>
+      <button class="nav__burger" data-nav-toggle aria-label="Toggle menu"><i data-lucide="menu"></i></button>
+    </nav>
+  </div>
+</header>
+
+<section class="doc-hero bg-grid-fine">
+  <div class="container">
+    <span class="kicker">Capability Catalog</span>
+    <h1 class="display doc-hero__title">Everything on the channel</h1>
+    <p class="lede">Eight tools, two capability groups, and a live library of Agent Skills — plus the full AINative platform the server has ground truth on.</p>
+    <div class="catstats">
+      <div class="catstat"><span class="catstat__n">8</span><span class="catstat__l mono">MCP Tools</span></div>
+      <div class="catstat"><span class="catstat__n">22</span><span class="catstat__l mono">Platform Services</span></div>
+      <div class="catstat"><span class="catstat__n">2</span><span class="catstat__l mono">Agent Skills</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="container" data-tabs>
+    <div class="tabs__nav" role="tablist" style="margin-bottom:40px">
+      <button class="tabs__tab is-active" data-tab="tools" role="tab" aria-selected="true">Tools</button>
+      <button class="tabs__tab" data-tab="services" role="tab" aria-selected="false">Platform Services</button>
+      <button class="tabs__tab" data-tab="skills" role="tab" aria-selected="false">Agent Skills</button>
+    </div>
+
+    <!-- ===== TOOLS ===== -->
+    <div data-tab-panel="tools">
+      <div class="catgroup">
+        <div class="catgroup__head">
+          <span class="kicker kicker--bare signal">// Group A</span>
+          <h2 class="h-section">Platform Discovery</h2>
+          <p class="muted">No credentials required. Live knowledge of every AINative service.</p>
+        </div>
+        <div class="toollist">
+          <article class="toolrow ticks">
+            <span class="tick-tr"></span><span class="tick-br"></span>
+            <div class="toolrow__main">
+              <code class="toolrow__name">prd_list_services</code>
+              <p class="toolrow__desc">List all 22 AINative products with descriptions, API prefixes, SDKs, and pricing.</p>
+            </div>
+            <div class="toolrow__meta"><span class="tag">read</span><span class="tag">no-auth</span></div>
+          </article>
+          <article class="toolrow ticks">
+            <span class="tick-tr"></span><span class="tick-br"></span>
+            <div class="toolrow__main">
+              <code class="toolrow__name">prd_get_api_catalog</code>
+              <p class="toolrow__desc">Get detailed API information — endpoints, methods, schemas — for a specific service.</p>
+            </div>
+            <div class="toolrow__meta"><span class="tag">read</span><span class="tag">no-auth</span></div>
+          </article>
+          <article class="toolrow ticks">
+            <span class="tick-tr"></span><span class="tick-br"></span>
+            <div class="toolrow__main">
+              <code class="toolrow__name">prd_suggest_stack</code>
+              <p class="toolrow__desc">Given a requirement, suggest which AINative services to use — with justifications.</p>
+            </div>
+            <div class="toolrow__meta"><span class="tag">reason</span><span class="tag">no-auth</span></div>
+          </article>
+        </div>
+      </div>
+
+      <div class="catgroup">
+        <div class="catgroup__head">
+          <span class="kicker kicker--bare signal">// Group B</span>
+          <h2 class="h-section">Agent Skills</h2>
+          <p class="muted">GitHub-canonical, ZeroDB-cached. List &amp; get work with zero credentials.</p>
+        </div>
+        <div class="toollist">
+          <article class="toolrow ticks"><span class="tick-tr"></span><span class="tick-br"></span><div class="toolrow__main"><code class="toolrow__name">skill_list</code><p class="toolrow__desc">List Agent Skills in the skills repo, pulled live from GitHub.</p></div><div class="toolrow__meta"><span class="tag">read</span><span class="tag">github</span></div></article>
+          <article class="toolrow ticks"><span class="tick-tr"></span><span class="tick-br"></span><div class="toolrow__main"><code class="toolrow__name">skill_get</code><p class="toolrow__desc">Get a skill's full SKILL.md body, optionally with all reference files.</p></div><div class="toolrow__meta"><span class="tag">read</span><span class="tag">github</span></div></article>
+          <article class="toolrow ticks"><span class="tick-tr"></span><span class="tick-br"></span><div class="toolrow__main"><code class="toolrow__name">skill_get_reference</code><p class="toolrow__desc">Get a single reference file for a skill, on demand.</p></div><div class="toolrow__meta"><span class="tag">read</span><span class="tag">github</span></div></article>
+          <article class="toolrow ticks"><span class="tick-tr"></span><span class="tick-br"></span><div class="toolrow__main"><code class="toolrow__name">skill_search</code><p class="toolrow__desc">Find the right skill for a task — ZeroDB semantic search, GitHub keyword fallback.</p></div><div class="toolrow__meta"><span class="tag">search</span><span class="tag">zerodb</span></div></article>
+          <article class="toolrow ticks"><span class="tick-tr"></span><span class="tick-br"></span><div class="toolrow__main"><code class="toolrow__name">skill_sync</code><p class="toolrow__desc">Mirror skills from GitHub into ZeroDB for semantic search and offline use.</p></div><div class="toolrow__meta"><span class="tag">write</span><span class="tag">zerodb</span></div></article>
+        </div>
+      </div>
+
+      <div class="callout callout--info">
+        <i data-lucide="sparkles"></i>
+        <p>Every skill is also exposed as an <strong>MCP prompt</strong> — each shows up as a selectable prompt named by its slug, with an optional <code>input</code> argument for the task to apply it to.</p>
+      </div>
+    </div>
+
+    <!-- ===== SERVICES ===== -->
+    <div data-tab-panel="services" hidden>
+      <div class="catgroup__head">
+        <span class="kicker kicker--bare signal">// Ground truth</span>
+        <h2 class="h-section">22 AINative services</h2>
+        <p class="muted">The platform catalog the server reasons over. Reachable via <code class="mono signal">prd_get_api_catalog</code>.</p>
+      </div>
+      <div class="svcgrid">
+        <span class="svc">ZeroDB</span><span class="svc">ZeroMemory</span><span class="svc">Agent Cloud</span><span class="svc">AI Kit</span>
+        <span class="svc">Cody CLI</span><span class="svc">Chat Completions API</span><span class="svc">Live Streaming</span><span class="svc">Multimodal Generation</span>
+        <span class="svc">Embeddings API</span><span class="svc">Echo Developer Program</span><span class="svc">OpenCap Stack</span><span class="svc">ZeroInvoice</span>
+        <span class="svc">ZeroCommerce</span><span class="svc">ZeroPipeline</span><span class="svc">Browser Agent</span><span class="svc">Content Workflow</span>
+        <span class="svc">AX Audit</span><span class="svc">Community Platform</span><span class="svc">MCP Hosting</span><span class="svc">Sequential Thinking</span>
+        <span class="svc">Agent402</span><span class="svc">QNN API</span>
+      </div>
+    </div>
+
+    <!-- ===== SKILLS ===== -->
+    <div data-tab-panel="skills" hidden>
+      <div class="catgroup__head">
+        <span class="kicker kicker--bare signal">// the8genc/ai-8gent-skills</span>
+        <h2 class="h-section">The skills library</h2>
+        <p class="muted">Reusable patterns — architecture, SOPs, autonomous platform builds. Authored in GitHub, loaded over MCP.</p>
+      </div>
+      <div class="skilllist">
+        <article class="skillcard">
+          <div class="skillcard__head"><code class="skillcard__slug">agentic-platform-builder</code><span class="chip chip--signal">Build</span></div>
+          <p class="skillcard__desc">Turns any business idea, SOP, or workflow into a complete multi-agent TypeScript/Node system — with a Coda data layer, test infrastructure, and GitHub CI/CD.</p>
+          <ul class="skillcard__refs mono">
+            <li>intake-questions · agent-patterns</li>
+            <li>coda-schema-patterns · implementation-patterns</li>
+            <li>testing-patterns · github-patterns</li>
+          </ul>
+        </article>
+        <article class="skillcard">
+          <div class="skillcard__head"><code class="skillcard__slug">prd-generator</code><span class="chip chip--info">Author</span></div>
+          <p class="skillcard__desc">The full PRD workflow as a declarative skill: intake → template → discover services → generate → validate → score → verify API refs → persist. Carries 3 templates and a 15-rule rubric.</p>
+          <ul class="skillcard__refs mono">
+            <li>orchestrates prd_suggest_stack / prd_get_api_catalog</li>
+            <li>persists via ZeroDB memory tools</li>
+            <li>load with · skill_get prd-generator</li>
+          </ul>
+        </article>
+      </div>
+      <div class="callout callout--info">
+        <i data-lucide="git-branch"></i>
+        <p>Source of truth is the GitHub repo, laid out as <code>skills/&lt;slug&gt;/SKILL.md</code> + <code>references/*.md</code>. Edit there, then <code>skill_sync</code> to refresh the ZeroDB mirror.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-band">
+  <img class="cta-band__motif motif" src="/assets/technology.png" alt="" aria-hidden="true" />
+  <div class="container cta-band__inner">
+    <span class="kicker kicker--bare signal">// Channel open</span>
+    <h2 class="display cta-band__title">Ready to put these<br />to work?</h2>
+    <div class="hero__cta">
+      <a href="/access" class="btn btn--signal btn--lg">Request access <i data-lucide="arrow-right"></i></a>
+      <a href="/docs" class="btn btn--ghost btn--lg">Read the field manual</a>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <a href="/" class="wordmark" style="font-size:26px">8<span class="mk-accent">gen</span>C</a>
+        <p style="margin-top:16px;max-width:34ch;color:var(--text-muted);font-size:var(--fs-sm);line-height:var(--lh-body)">Fractional leadership, balanced with agentic execution. The MCP server is the channel that keeps execution on-standard.</p>
+        <div style="margin-top:20px"><span class="chip chip--ok"><span class="status-dot"></span> Operational</span></div>
+      </div>
+      <div class="footer-col"><h4>Connector</h4><ul><li><a href="/">Overview</a></li><li><a href="/docs">How to connect</a></li><li><a href="/tools">Tool catalog</a></li><li><a href="/#workflows">Workflows</a></li></ul></div>
+      <div class="footer-col"><h4>Access</h4><ul><li><a href="/access">Sign in</a></li><li><a href="/access">Request access</a></li><li><a href="/docs#auth">Auth methods</a></li><li><a href="/#status">System status</a></li></ul></div>
+      <div class="footer-col"><h4>Endpoint</h4><ul><li><a class="mono" href="#">mcp.8genc.com/mcp</a></li><li><a class="mono" href="/access">mcp.8genc.com/access</a></li><li><a class="mono" href="#">github · ai-8gent-skills</a></li><li><a class="mono" href="#">docs.ainative.studio</a></li></ul></div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 8genC · Model Context Protocol Endpoint</p>
+      <p>TLS 1.3 · OAuth 2.1 · Authorized personnel only</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/icons.js"></script>
+<script src="/site.js"></script>
+</body>
+</html>
