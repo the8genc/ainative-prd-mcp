@@ -1,0 +1,413 @@
+<!-- @dsCard group="MCP Site" viewport="1280x900" name="Home — mcp.8genc.com" subtitle="Direction A · endpoint-forward landing for the 8genC MCP connector" -->
+<!-- @startingPoint section="MCP Connector" subtitle="8genC MCP connector — home/landing (Direction A)" viewport="1280x900" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>8genC MCP · Agentic Execution Endpoint</title>
+<meta name="description" content="The 8genC MCP server — the secure channel between your AI agents and the 8genC operating playbook. Live platform intelligence and a vetted Agent Skills library, over Model Context Protocol." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="/styles.css" />
+<link rel="stylesheet" href="/site.css" />
+</head>
+<body class="bg-vignette">
+
+<!-- ============================ HEADER ============================ -->
+<header class="site-header">
+  <div class="container site-header__bar">
+    <a href="/" class="wordmark" aria-label="8genC home">8<span class="mk-accent">gen</span>C<span class="wordmark__sub">MCP</span></a>
+    <nav class="nav" aria-label="Primary">
+      <ul class="nav__links">
+        <li><a class="nav__link nav__link--active" href="/">Overview</a></li>
+        <li><a class="nav__link" href="/docs">Connect</a></li>
+        <li><a class="nav__link" href="/tools">Tools</a></li>
+        <li><a class="nav__link" href="/#status">Status</a></li>
+        <li><a class="nav__link" href="/access">Access</a></li>
+      </ul>
+      <a href="/access" class="btn btn--signal">Request access</a>
+      <button class="nav__burger" data-nav-toggle aria-label="Toggle menu"><i data-lucide="menu"></i></button>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- ============================ HERO ============================ -->
+<section class="hero bg-grid">
+  <img class="hero__motif motif" src="/assets/technology.png" alt="" aria-hidden="true" />
+  <div class="container hero__inner">
+    <div class="hero__copy">
+      <span class="kicker">Model Context Protocol · Secure Endpoint</span>
+      <h1 class="display hero__title">Brief your agents.<br />Then let them<br /><span class="signal">execute.</span></h1>
+      <p class="lede hero__lede">The 8genC MCP server is the secure channel between your AI agents and our operating playbook — live platform intelligence and a vetted library of Agent Skills, delivered over Model Context Protocol.</p>
+      <div class="hero__cta">
+        <a href="/access" class="btn btn--signal btn--lg">Request access <i data-lucide="arrow-right"></i></a>
+        <a href="/docs" class="btn btn--ghost btn--lg">Read the field manual</a>
+      </div>
+      <div class="hero__meta">
+        <span class="coord">LAT 37.7749° N</span>
+        <span class="coord">LON 122.4194° W</span>
+        <span class="coord">CHANNEL · TLS 1.3</span>
+      </div>
+    </div>
+
+    <aside class="hero__panel ticks" aria-label="Connection endpoint">
+      <span class="tick-tr"></span><span class="tick-br"></span>
+      <div class="hero__panel-head">
+        <span class="eyebrow eyebrow--signal eyebrow-dot">Live endpoint</span>
+        <span class="chip chip--ok"><span class="status-dot"></span> Operational</span>
+      </div>
+      <div class="codeblock">
+        <div class="codeblock__bar">
+          <span class="codeblock__label">~/.mcp · prd-generator</span>
+          <button class="copy-btn" data-copy="#hero-config"><i data-lucide="copy"></i><span data-copy-label>Copy</span></button>
+        </div>
+        <pre class="codeblock__body" id="hero-config"><span class="tok-punc">{</span>
+  <span class="tok-key">"mcpServers"</span><span class="tok-punc">: {</span>
+    <span class="tok-key">"prd-generator"</span><span class="tok-punc">: {</span>
+      <span class="tok-key">"type"</span><span class="tok-punc">:</span> <span class="tok-str">"http"</span><span class="tok-punc">,</span>
+      <span class="tok-key">"url"</span><span class="tok-punc">:</span>  <span class="tok-str">"https://mcp.8genc.com/mcp"</span>
+    <span class="tok-punc">}</span>
+  <span class="tok-punc">}</span>
+<span class="tok-punc">}</span></pre>
+      </div>
+      <p class="hero__panel-note">Add to Claude, Cursor, or Windsurf. Requests are authorized per approved account — <a class="link" href="/access">request access</a> to receive a token.</p>
+    </aside>
+  </div>
+</section>
+
+<!-- ============================ STATUS STRIP ============================ -->
+<section class="statusbar" id="status">
+  <div class="container statusbar__inner">
+    <div class="statusbar__item">
+      <span class="chip chip--ok"><span class="status-dot"></span> All systems operational</span>
+    </div>
+    <div class="statusbar__metrics">
+      <div class="metric"><span class="metric__val">99.98<span class="metric__unit">%</span></span><span class="metric__lbl">90-day uptime</span></div>
+      <div class="metric"><span class="metric__val">38<span class="metric__unit">ms</span></span><span class="metric__lbl">Median latency</span></div>
+      <div class="metric"><span class="metric__val">8<span class="metric__unit">tools</span></span><span class="metric__lbl">Exposed over MCP</span></div>
+      <div class="metric"><span class="metric__val">22<span class="metric__unit">svc</span></span><span class="metric__lbl">Platform catalog</span></div>
+    </div>
+    <a class="link mono statusbar__link" href="/docs">Status feed <i data-lucide="arrow-up-right" style="width:13px;height:13px;vertical-align:-2px"></i></a>
+  </div>
+</section>
+
+<!-- ============================ WHAT IS IT ============================ -->
+<section class="section" id="overview">
+  <div class="container">
+    <div class="eyebrow-row" data-reveal>
+      <span class="kicker">01 · Mission Brief</span>
+      <span class="eyebrow-row__index">mcp.8genc.com/mcp</span>
+    </div>
+    <div class="section-head" data-reveal>
+      <h2 class="h-section">A single endpoint that gives any agent <span class="signal">situational awareness</span></h2>
+      <p class="lede">8genC pairs seasoned fractional leadership with agentic execution. The MCP server is how that execution gets standardized: it hands your AI agents the same ground truth and the same playbook our operators use — so the work comes back correct, compliant, and on-brand the first time.</p>
+    </div>
+
+    <div class="pillars">
+      <article class="card card--hover ticks pillar" data-reveal data-reveal-delay="1">
+        <span class="tick-tr"></span><span class="tick-br"></span>
+        <div class="pillar__icon"><i data-lucide="radar"></i></div>
+        <span class="card__num">CAP-01</span>
+        <h3 class="card__title">Platform Intelligence</h3>
+        <p class="card__body">Live, authoritative knowledge of the AINative platform — every service, API endpoint, SDK, and architectural constraint. Agents stop guessing at integrations and start citing real API paths.</p>
+        <ul class="pillar__list mono">
+          <li>prd_list_services</li>
+          <li>prd_get_api_catalog</li>
+          <li>prd_suggest_stack</li>
+        </ul>
+      </article>
+
+      <article class="card card--hover ticks pillar" data-reveal data-reveal-delay="2">
+        <span class="tick-tr"></span><span class="tick-br"></span>
+        <div class="pillar__icon"><i data-lucide="library"></i></div>
+        <span class="card__num">CAP-02</span>
+        <h3 class="card__title">Agent Skills Library</h3>
+        <p class="card__body">A GitHub-backed library of reusable Agent Skills — architecture patterns, SOPs, and full multi-agent build playbooks — loaded straight from source and exposed as MCP tools and prompts.</p>
+        <ul class="pillar__list mono">
+          <li>skill_list · skill_get</li>
+          <li>skill_get_reference</li>
+          <li>skill_search · skill_sync</li>
+        </ul>
+      </article>
+
+      <article class="card card--hover ticks pillar" data-reveal data-reveal-delay="3">
+        <span class="tick-tr"></span><span class="tick-br"></span>
+        <div class="pillar__icon"><i data-lucide="git-branch"></i></div>
+        <span class="card__num">CAP-03</span>
+        <h3 class="card__title">One Source of Truth</h3>
+        <p class="card__body">Skills are authored in GitHub and mirrored into ZeroDB for semantic search. Edit the playbook once; every connected agent — across every client engagement — pulls the same current version.</p>
+        <ul class="pillar__list mono">
+          <li>the8genc/ai-8gent-skills</li>
+          <li>ZeroDB semantic cache</li>
+          <li>versioned · auditable</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ TWO TRACKS ============================ -->
+<section class="section section--tight tracks-section">
+  <div class="container">
+    <div class="eyebrow-row" data-reveal>
+      <span class="kicker">02 · Clearance Tracks</span>
+      <span class="eyebrow-row__index">two personas · one channel</span>
+    </div>
+    <div class="tracks">
+      <article class="track track--consultant" data-reveal data-reveal-delay="1">
+        <div class="track__tab"><i data-lucide="shield"></i> Consultants</div>
+        <h3 class="track__title">Internal project work</h3>
+        <p class="track__body">For 8genC operators running client engagements. Spin up agents that already know our delivery standards — generate PRDs, suggest stacks, and build agentic systems against the exact templates and validation rubrics the firm runs on.</p>
+        <ul class="track__list">
+          <li><i data-lucide="check"></i> Load the firm's SOPs as Agent Skills</li>
+          <li><i data-lucide="check"></i> Generate & score PRDs against the 15-rule rubric</li>
+          <li><i data-lucide="check"></i> Persist project memory across sessions in ZeroDB</li>
+        </ul>
+        <a href="/docs" class="link mono track__link">Consultant setup <i data-lucide="arrow-right" style="width:13px;height:13px;vertical-align:-2px"></i></a>
+      </article>
+
+      <article class="track track--client" data-reveal data-reveal-delay="2">
+        <div class="track__tab"><i data-lucide="briefcase"></i> Clients</div>
+        <h3 class="track__title">Your specific projects</h3>
+        <p class="track__body">For client teams operating inside an 8genC engagement. Connect your own agents to a scoped channel that carries your project's context — and execute against the same playbook your 8genC operators use, with full visibility.</p>
+        <ul class="track__list">
+          <li><i data-lucide="check"></i> Scoped access to your engagement's tools</li>
+          <li><i data-lucide="check"></i> Same skills, same standards as your operators</li>
+          <li><i data-lucide="check"></i> Admin-approved accounts, revocable tokens</li>
+        </ul>
+        <a href="/access" class="link mono track__link">Request client access <i data-lucide="arrow-right" style="width:13px;height:13px;vertical-align:-2px"></i></a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ HOW TO CONNECT ============================ -->
+<section class="section" id="connect">
+  <div class="container">
+    <div class="eyebrow-row" data-reveal>
+      <span class="kicker">03 · Field Setup</span>
+      <span class="eyebrow-row__index">~4 min · approved accounts</span>
+    </div>
+    <div class="section-head" data-reveal>
+      <h2 class="h-section">Connect in three moves</h2>
+    </div>
+    <div class="steps">
+      <div class="step" data-reveal data-reveal-delay="1">
+        <span class="step__num">01</span>
+        <h3 class="step__title">Get approved</h3>
+        <p class="step__body">Register at the access portal and verify your email. An admin approves your account and assigns your track — consultant or client.</p>
+        <a class="link mono step__link" href="/access">Open /access →</a>
+      </div>
+      <div class="step" data-reveal data-reveal-delay="2">
+        <span class="step__num">02</span>
+        <h3 class="step__title">Mint a token</h3>
+        <p class="step__body">Sign in via OAuth at connect time, or create a personal access token in the portal and add it as a Bearer header in your MCP client.</p>
+        <a class="link mono step__link" href="/docs#auth">Auth methods →</a>
+      </div>
+      <div class="step" data-reveal data-reveal-delay="3">
+        <span class="step__num">03</span>
+        <h3 class="step__title">Point your client</h3>
+        <p class="step__body">Drop the endpoint into Claude, Cursor, or Windsurf. The 8 tools and every Agent Skill appear instantly — ready to execute.</p>
+        <a class="link mono step__link" href="/docs">Full manual →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ TOOL CATALOG PREVIEW ============================ -->
+<section class="section section--tight tools-preview bg-grid-fine">
+  <div class="container">
+    <div class="eyebrow-row" data-reveal>
+      <span class="kicker">04 · Capability Catalog</span>
+      <span class="eyebrow-row__index">8 tools · 2 groups</span>
+    </div>
+    <div class="tools-preview__head" data-reveal>
+      <h2 class="h-section">Eight tools. Zero guesswork.</h2>
+      <a href="/tools" class="btn btn--ghost">Full catalog <i data-lucide="arrow-right"></i></a>
+    </div>
+    <div class="toolgrid">
+      <div class="tool-cell" data-reveal><span class="tool-cell__group">Discovery</span><code>prd_list_services</code><p>List all 22 AINative products with APIs, SDKs & pricing.</p></div>
+      <div class="tool-cell" data-reveal data-reveal-delay="1"><span class="tool-cell__group">Discovery</span><code>prd_get_api_catalog</code><p>Detailed API info for a specific service.</p></div>
+      <div class="tool-cell" data-reveal data-reveal-delay="2"><span class="tool-cell__group">Discovery</span><code>prd_suggest_stack</code><p>Recommend services for a requirement, with justification.</p></div>
+      <div class="tool-cell" data-reveal><span class="tool-cell__group">Skills</span><code>skill_list</code><p>List Agent Skills pulled live from GitHub.</p></div>
+      <div class="tool-cell" data-reveal data-reveal-delay="1"><span class="tool-cell__group">Skills</span><code>skill_get</code><p>Fetch a skill's full SKILL.md body.</p></div>
+      <div class="tool-cell" data-reveal data-reveal-delay="2"><span class="tool-cell__group">Skills</span><code>skill_get_reference</code><p>Pull a single reference file on demand.</p></div>
+      <div class="tool-cell" data-reveal><span class="tool-cell__group">Skills</span><code>skill_search</code><p>Semantic search for the right skill for a task.</p></div>
+      <div class="tool-cell" data-reveal data-reveal-delay="1"><span class="tool-cell__group">Skills</span><code>skill_sync</code><p>Mirror GitHub skills into ZeroDB for offline use.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ WORKFLOWS ============================ -->
+<section class="section" id="workflows">
+  <div class="container">
+    <div class="eyebrow-row" data-reveal>
+      <span class="kicker">05 · Operations Log</span>
+      <span class="eyebrow-row__index">representative runs</span>
+    </div>
+    <div class="section-head" data-reveal>
+      <h2 class="h-section">What execution looks like</h2>
+      <p class="lede">Two real-shaped runs — one internal, one client-facing — showing how the tools chain into a finished deliverable.</p>
+    </div>
+
+    <div class="workflows">
+      <article class="workflow ticks" data-reveal data-reveal-delay="1">
+        <span class="tick-tr"></span><span class="tick-br"></span>
+        <div class="workflow__head">
+          <span class="chip chip--signal">Consultant</span>
+          <span class="coord">RUN · 0xA7F2</span>
+        </div>
+        <h3 class="workflow__title">"Write a PRD for adding webhook notifications to Agent Cloud."</h3>
+        <ol class="flow">
+          <li class="flow__step"><span class="flow__tool">prd_suggest_stack</span><span class="flow__desc">Picks real AINative services for the requirement</span></li>
+          <li class="flow__step"><span class="flow__tool">skill_get prd-generator</span><span class="flow__desc">Loads the firm's PRD template + 15-rule rubric</span></li>
+          <li class="flow__step"><span class="flow__tool">prd_get_api_catalog</span><span class="flow__desc">Verifies every API path is real before it ships</span></li>
+          <li class="flow__step"><span class="flow__tool">zerodb_store_memory</span><span class="flow__desc">Persists the PRD for future sessions</span></li>
+        </ol>
+        <div class="workflow__out"><i data-lucide="file-check-2"></i> Scored PRD, real API refs, saved to project memory.</div>
+      </article>
+
+      <article class="workflow ticks" data-reveal data-reveal-delay="2">
+        <span class="tick-tr"></span><span class="tick-br"></span>
+        <div class="workflow__head">
+          <span class="chip chip--info">Client</span>
+          <span class="coord">RUN · 0xC013</span>
+        </div>
+        <h3 class="workflow__title">"Turn our onboarding SOP into an automated multi-agent system."</h3>
+        <ol class="flow">
+          <li class="flow__step"><span class="flow__tool">skill_search</span><span class="flow__desc">Finds <em>agentic-platform-builder</em> as best match</span></li>
+          <li class="flow__step"><span class="flow__tool">skill_get</span><span class="flow__desc">Loads the full build playbook + references</span></li>
+          <li class="flow__step"><span class="flow__tool">prd_list_services</span><span class="flow__desc">Maps each agent to a real platform service</span></li>
+          <li class="flow__step"><span class="flow__tool">skill_get_reference</span><span class="flow__desc">Pulls testing + CI/CD patterns on demand</span></li>
+        </ol>
+        <div class="workflow__out"><i data-lucide="workflow"></i> A scoped, testable multi-agent system spec — to your standards.</div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ SECURITY ============================ -->
+<section class="section section--tight security bg-grid-fine">
+  <div class="container security__inner">
+    <div class="security__copy" data-reveal>
+      <span class="kicker">06 · Access Control</span>
+      <h2 class="h-section">Locked down by default</h2>
+      <p class="lede">Every request to <code class="mono signal">POST /mcp</code> must carry a valid credential for an <strong>approved</strong> account. No approval, no channel.</p>
+      <a href="/docs#auth" class="btn btn--ghost">Security model <i data-lucide="arrow-right"></i></a>
+    </div>
+    <div class="security__grid">
+      <div class="seccard" data-reveal data-reveal-delay="1"><i data-lucide="key-round"></i><h4>OAuth 2.1 + PKCE</h4><p>The server is its own authorization server. Compatible clients open a browser, you sign in and consent, the client receives a scoped token.</p></div>
+      <div class="seccard" data-reveal data-reveal-delay="2"><i data-lucide="ticket"></i><h4>Personal access tokens</h4><p>Mint <code class="mono">8genc_pat_…</code> tokens in the portal and pass them as a Bearer header. Revoke any token, any time.</p></div>
+      <div class="seccard" data-reveal data-reveal-delay="1"><i data-lucide="user-check"></i><h4>Admin approval</h4><p>New accounts stay pending until an admin approves and assigns a track. Block, unblock, and reset from the portal.</p></div>
+      <div class="seccard" data-reveal data-reveal-delay="2"><i data-lucide="mail-check"></i><h4>Verified identity</h4><p>Email verification on every account, optional Google / GitHub social sign-in, JWT-backed sessions.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FAQ ============================ -->
+<section class="section" id="faq">
+  <div class="container faq__inner">
+    <div class="faq__head" data-reveal>
+      <span class="kicker">07 · Field Questions</span>
+      <h2 class="h-section">Before you connect</h2>
+    </div>
+    <div class="acc" data-reveal>
+      <div class="acc__item" data-acc-item>
+        <button class="acc__head" data-acc-head aria-expanded="false"><span>Do I need an account to use the MCP server?</span><span class="acc__icon"></span></button>
+        <div class="acc__body" data-acc-body hidden>
+          <p>For the hosted endpoint at <code class="mono">mcp.8genc.com/mcp</code> — yes. Every request is gated on an <strong>approved</strong> account. Register at the access portal, verify your email, and an admin approves you.</p>
+          <p>Run locally over stdio and platform discovery plus the core skill tools work with zero credentials — only semantic search and sync need a ZeroDB account.</p>
+        </div>
+      </div>
+      <div class="acc__item" data-acc-item>
+        <button class="acc__head" data-acc-head aria-expanded="false"><span>Which MCP clients are supported?</span><span class="acc__icon"></span></button>
+        <div class="acc__body" data-acc-body hidden>
+          <p>Any client that speaks Streamable HTTP MCP — Claude, Cursor, and Windsurf are the common ones. Clients that support MCP OAuth get browser sign-in at connect; everything else uses a personal access token as a Bearer header.</p>
+        </div>
+      </div>
+      <div class="acc__item" data-acc-item>
+        <button class="acc__head" data-acc-head aria-expanded="false"><span>Where do the Agent Skills come from?</span><span class="acc__icon"></span></button>
+        <div class="acc__body" data-acc-body hidden>
+          <p>The source of truth is the GitHub repo <code class="mono">the8genc/ai-8gent-skills</code>, laid out as <code class="mono">skills/&lt;slug&gt;/SKILL.md</code> plus reference files. ZeroDB is a cache and semantic-search layer — author skills in GitHub, then <code class="mono">skill_sync</code> to refresh the mirror.</p>
+        </div>
+      </div>
+      <div class="acc__item" data-acc-item>
+        <button class="acc__head" data-acc-head aria-expanded="false"><span>What happened to the PRD tools?</span><span class="acc__icon"></span></button>
+        <div class="acc__body" data-acc-body hidden>
+          <p>PRD authoring moved out of the server and into the <code class="mono">prd-generator</code> Agent Skill. The skill carries the full workflow, templates, and validation rubric — and orchestrates the server's platform tools and your ZeroDB memory tools rather than re-implementing them. Load it with <code class="mono">skill_get prd-generator</code>.</p>
+        </div>
+      </div>
+      <div class="acc__item" data-acc-item>
+        <button class="acc__head" data-acc-head aria-expanded="false"><span>Is the difference between consultant and client access technical?</span><span class="acc__icon"></span></button>
+        <div class="acc__body" data-acc-body hidden>
+          <p>Both personas connect to the same channel and the same playbook — the distinction is scope and approval. Admins assign a track on approval; client accounts are scoped to their engagement, consultant accounts carry the firm's internal context. Same standards, different blast radius.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ CTA BAND ============================ -->
+<section class="cta-band">
+  <img class="cta-band__motif motif" src="/assets/technology.png" alt="" aria-hidden="true" />
+  <div class="container cta-band__inner" data-reveal>
+    <span class="kicker kicker--bare signal">// Channel open</span>
+    <h2 class="display cta-band__title">Put your agents on the<br />8genC channel.</h2>
+    <div class="hero__cta">
+      <a href="/access" class="btn btn--signal btn--lg">Request access <i data-lucide="arrow-right"></i></a>
+      <a href="/docs" class="btn btn--ghost btn--lg">Read the field manual</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ============================ FOOTER ============================ -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <a href="/" class="wordmark" style="font-size:26px">8<span class="mk-accent">gen</span>C</a>
+        <p style="margin-top:16px;max-width:34ch;color:var(--text-muted);font-size:var(--fs-sm);line-height:var(--lh-body)">Fractional leadership, balanced with agentic execution. The MCP server is the channel that keeps execution on-standard.</p>
+        <div style="margin-top:20px"><span class="chip chip--ok"><span class="status-dot"></span> Operational</span></div>
+      </div>
+      <div class="footer-col">
+        <h4>Connector</h4>
+        <ul>
+          <li><a href="/">Overview</a></li>
+          <li><a href="/docs">How to connect</a></li>
+          <li><a href="/tools">Tool catalog</a></li>
+          <li><a href="/#workflows">Workflows</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Access</h4>
+        <ul>
+          <li><a href="/access">Sign in</a></li>
+          <li><a href="/access">Request access</a></li>
+          <li><a href="/docs#auth">Auth methods</a></li>
+          <li><a href="/#status">System status</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Endpoint</h4>
+        <ul>
+          <li><a class="mono" href="#">mcp.8genc.com/mcp</a></li>
+          <li><a class="mono" href="/access">mcp.8genc.com/access</a></li>
+          <li><a class="mono" href="#">github · ai-8gent-skills</a></li>
+          <li><a class="mono" href="#">docs.ainative.studio</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 8genC · Model Context Protocol Endpoint</p>
+      <p>TLS 1.3 · OAuth 2.1 · Authorized personnel only</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/icons.js"></script>
+<script src="/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!-- @dsCard group="MCP Site" viewport="1280x900" name="Docs — How to Connect" subtitle="Step-by-step connect guide, auth, security & status" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>8genC MCP · Field Manual</title>
+<meta name="description" content="How to connect your AI agents to the 8genC MCP server — prerequisites, authentication, client configuration, and verification." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="/styles.css" />
+<link rel="stylesheet" href="/site.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container site-header__bar">
+    <a href="/" class="wordmark" aria-label="8genC home">8<span class="mk-accent">gen</span>C<span class="wordmark__sub">MCP</span></a>
+    <nav class="nav" aria-label="Primary">
+      <ul class="nav__links">
+        <li><a class="nav__link" href="/">Overview</a></li>
+        <li><a class="nav__link nav__link--active" href="/docs">Connect</a></li>
+        <li><a class="nav__link" href="/tools">Tools</a></li>
+        <li><a class="nav__link" href="/#status">Status</a></li>
+        <li><a class="nav__link" href="/access">Access</a></li>
+      </ul>
+      <a href="/access" class="btn btn--signal">Request access</a>
+      <button class="nav__burger" data-nav-toggle aria-label="Toggle menu"><i data-lucide="menu"></i></button>
+    </nav>
+  </div>
+</header>
+
+<!-- DOC HEADER -->
+<section class="doc-hero bg-grid-fine">
+  <div class="container">
+    <span class="kicker">Field Manual · v2.0</span>
+    <h1 class="display doc-hero__title">Connect to the channel</h1>
+    <p class="lede">Everything an operator or client needs to put an AI agent on the 8genC MCP server. Budget about four minutes once your account is approved.</p>
+    <div class="doc-hero__meta">
+      <span class="endpoint-pill"><span class="ep-method">POST</span><span class="ep-url">https://mcp.8genc.com/mcp</span><button class="copy-btn" data-copy-text="https://mcp.8genc.com/mcp"><i data-lucide="copy"></i><span data-copy-label>Copy</span></button></span>
+      <span class="chip chip--ok"><span class="status-dot"></span> Operational</span>
+    </div>
+  </div>
+</section>
+
+<div class="container doc-layout">
+  <!-- TOC -->
+  <aside class="doc-toc">
+    <nav aria-label="Contents">
+      <span class="doc-toc__label">On this page</span>
+      <ol>
+        <li><a href="#prereq" class="doc-toc__link">Prerequisites</a></li>
+        <li><a href="#auth" class="doc-toc__link">Authentication</a></li>
+        <li><a href="#configure" class="doc-toc__link">Configure your client</a></li>
+        <li><a href="#verify" class="doc-toc__link">Verify the connection</a></li>
+        <li><a href="#first" class="doc-toc__link">First commands</a></li>
+        <li><a href="#security" class="doc-toc__link">Security model</a></li>
+      </ol>
+      <div class="doc-toc__cta">
+        <span class="coord">No account yet?</span>
+        <a href="/access" class="btn btn--ghost btn--block">Request access</a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="doc-content">
+
+    <article class="doc-block" id="prereq">
+      <span class="doc-block__index mono">01</span>
+      <h2 class="doc-h2">Prerequisites</h2>
+      <p>The hosted endpoint is protected. Before you can connect you need:</p>
+      <ul class="doc-list">
+        <li><strong>An approved 8genC account.</strong> Register at <a class="link" href="/access">mcp.8genc.com/access</a>, verify your email, and wait for an admin to approve you and assign your track.</li>
+        <li><strong>An MCP-capable client.</strong> Claude, Cursor, or Windsurf — anything that speaks Streamable HTTP MCP.</li>
+        <li><strong>A credential.</strong> Either browser OAuth at connect time, or a personal access token minted in the portal.</li>
+      </ul>
+      <div class="callout callout--info">
+        <i data-lucide="info"></i>
+        <p>Running locally over <code>stdio</code>? Platform discovery and the core skill tools work with <strong>zero credentials</strong>. Only <code>skill_search</code> and <code>skill_sync</code> need a ZeroDB account.</p>
+      </div>
+    </article>
+
+    <article class="doc-block" id="auth">
+      <span class="doc-block__index mono">02</span>
+      <h2 class="doc-h2">Authentication</h2>
+      <p>Every request to <code>POST /mcp</code> must carry a valid credential for an approved account. Pick whichever method your client supports — both are gated on account status <code>approved</code>.</p>
+
+      <div class="authcards">
+        <div class="authcard">
+          <div class="authcard__head"><i data-lucide="key-round"></i><h3>OAuth 2.1 — browser sign-in</h3></div>
+          <p>The server is its own authorization server (RFC 9728 metadata + PKCE). Clients that support MCP OAuth open a browser, you sign in and consent, and the client receives a scoped token automatically.</p>
+          <span class="tag">Recommended for Claude</span>
+        </div>
+        <div class="authcard">
+          <div class="authcard__head"><i data-lucide="ticket"></i><h3>Personal access token</h3></div>
+          <p>Create a token in the portal and pass it as a Bearer header. Best for headless clients and CI. Revoke it any time from <a class="link" href="/access">/access</a>.</p>
+          <span class="tag">Format · 8genc_pat_…</span>
+        </div>
+      </div>
+
+      <h3 class="doc-h3">Token configuration</h3>
+      <div class="codeblock">
+        <div class="codeblock__bar">
+          <span class="codeblock__label">mcp.json · Bearer header</span>
+          <button class="copy-btn" data-copy="#cfg-pat"><i data-lucide="copy"></i><span data-copy-label>Copy</span></button>
+        </div>
+        <pre class="codeblock__body" id="cfg-pat"><span class="tok-punc">{</span>
+  <span class="tok-key">"mcpServers"</span><span class="tok-punc">: {</span>
+    <span class="tok-key">"prd-generator"</span><span class="tok-punc">: {</span>
+      <span class="tok-key">"type"</span><span class="tok-punc">:</span> <span class="tok-str">"http"</span><span class="tok-punc">,</span>
+      <span class="tok-key">"url"</span><span class="tok-punc">:</span> <span class="tok-str">"https://mcp.8genc.com/mcp"</span><span class="tok-punc">,</span>
+      <span class="tok-key">"headers"</span><span class="tok-punc">: {</span>
+        <span class="tok-key">"Authorization"</span><span class="tok-punc">:</span> <span class="tok-str">"Bearer 8genc_pat_…"</span>
+      <span class="tok-punc">}</span>
+    <span class="tok-punc">}</span>
+  <span class="tok-punc">}</span>
+<span class="tok-punc">}</span></pre>
+      </div>
+    </article>
+
+    <article class="doc-block" id="configure">
+      <span class="doc-block__index mono">03</span>
+      <h2 class="doc-h2">Configure your client</h2>
+      <p>Add the server to your MCP client config. OAuth-capable clients can omit the <code>headers</code> block entirely and sign in at connect.</p>
+
+      <div data-tabs class="tabs">
+        <div class="tabs__nav" role="tablist">
+          <button class="tabs__tab is-active" data-tab="claude" role="tab" aria-selected="true">Claude</button>
+          <button class="tabs__tab" data-tab="cursor" role="tab" aria-selected="false">Cursor</button>
+          <button class="tabs__tab" data-tab="windsurf" role="tab" aria-selected="false">Windsurf</button>
+        </div>
+
+        <div class="tabs__panel" data-tab-panel="claude">
+          <div class="codeblock">
+            <div class="codeblock__bar">
+              <span class="codeblock__label">claude_desktop_config.json</span>
+              <button class="copy-btn" data-copy="#cfg-claude"><i data-lucide="copy"></i><span data-copy-label>Copy</span></button>
+            </div>
+            <pre class="codeblock__body" id="cfg-claude"><span class="tok-cmt">// OAuth: omit headers — Claude opens a browser to sign in</span>
+<span class="tok-punc">{</span>
+  <span class="tok-key">"mcpServers"</span><span class="tok-punc">: {</span>
+    <span class="tok-key">"prd-generator"</span><span class="tok-punc">: {</span>
+      <span class="tok-key">"type"</span><span class="tok-punc">:</span> <span class="tok-str">"http"</span><span class="tok-punc">,</span>
+      <span class="tok-key">"url"</span><span class="tok-punc">:</span> <span class="tok-str">"https://mcp.8genc.com/mcp"</span>
+    <span class="tok-punc">}</span>
+  <span class="tok-punc">}</span>
+<span class="tok-punc">}</span></pre>
+          </div>
+        </div>
+
+        <div class="tabs__panel" data-tab-panel="cursor" hidden>
+          <div class="codeblock">
+            <div class="codeblock__bar">
+              <span class="codeblock__label">~/.cursor/mcp.json</span>
+              <button class="copy-btn" data-copy="#cfg-cursor"><i data-lucide="copy"></i><span data-copy-label>Copy</span></button>
+            </div>
+            <pre class="codeblock__body" id="cfg-cursor"><span class="tok-punc">{</span>
+  <span class="tok-key">"mcpServers"</span><span class="tok-punc">: {</span>
+    <span class="tok-key">"prd-generator"</span><span class="tok-punc">: {</span>
+      <span class="tok-key">"type"</span><span class="tok-punc">:</span> <span class="tok-str">"http"</span><span class="tok-punc">,</span>
+      <span class="tok-key">"url"</span><span class="tok-punc">:</span> <span class="tok-str">"https://mcp.8genc.com/mcp"</span><span class="tok-punc">,</span>
+      <span class="tok-key">"headers"</span><span class="tok-punc">: {</span> <span class="tok-key">"Authorization"</span><span class="tok-punc">:</span> <span class="tok-str">"Bearer 8genc_pat_…"</span> <span class="tok-punc">}</span>
+    <span class="tok-punc">}</span>
+  <span class="tok-punc">}</span>
+<span class="tok-punc">}</span></pre>
+          </div>
+        </div>
+
+        <div class="tabs__panel" data-tab-panel="windsurf" hidden>
+          <div class="codeblock">
+            <div class="codeblock__bar">
+              <span class="codeblock__label">~/.codeium/windsurf/mcp_config.json</span>
+              <button class="copy-btn" data-copy="#cfg-windsurf"><i data-lucide="copy"></i><span data-copy-label>Copy</span></button>
+            </div>
+            <pre class="codeblock__body" id="cfg-windsurf"><span class="tok-punc">{</span>
+  <span class="tok-key">"mcpServers"</span><span class="tok-punc">: {</span>
+    <span class="tok-key">"prd-generator"</span><span class="tok-punc">: {</span>
+      <span class="tok-key">"serverUrl"</span><span class="tok-punc">:</span> <span class="tok-str">"https://mcp.8genc.com/mcp"</span><span class="tok-punc">,</span>
+      <span class="tok-key">"headers"</span><span class="tok-punc">: {</span> <span class="tok-key">"Authorization"</span><span class="tok-punc">:</span> <span class="tok-str">"Bearer 8genc_pat_…"</span> <span class="tok-punc">}</span>
+    <span class="tok-punc">}</span>
+  <span class="tok-punc">}</span>
+<span class="tok-punc">}</span></pre>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="doc-block" id="verify">
+      <span class="doc-block__index mono">04</span>
+      <h2 class="doc-h2">Verify the connection</h2>
+      <p>Restart your client and confirm the server registered. You should see <strong>8 tools</strong> and a set of skill prompts.</p>
+      <div class="terminal">
+        <div class="terminal__bar"><span class="terminal__dot"></span><span class="terminal__dot"></span><span class="terminal__dot"></span><span class="terminal__title mono">prd-generator · connected</span></div>
+        <pre class="terminal__body"><span class="term-prompt">›</span> <span class="term-cmd">List the tools on prd-generator</span>
+
+<span class="term-ok">✓ connected</span>  mcp.8genc.com/mcp   <span class="muted">(38ms)</span>
+
+  <span class="signal">platform</span>   prd_list_services · prd_get_api_catalog · prd_suggest_stack
+  <span class="signal">skills</span>     skill_list · skill_get · skill_get_reference · skill_search · skill_sync
+
+<span class="term-ok">✓ 8 tools ready</span>  ·  prompts loaded from the8genc/ai-8gent-skills</pre>
+      </div>
+      <div class="callout callout--warn">
+        <i data-lucide="alert-triangle"></i>
+        <p>Seeing <code>401 Unauthorized</code>? Your account is likely still <strong>pending</strong>. Check your approval status in the portal — the channel stays closed until an admin approves you.</p>
+      </div>
+    </article>
+
+    <article class="doc-block" id="first">
+      <span class="doc-block__index mono">05</span>
+      <h2 class="doc-h2">First commands</h2>
+      <p>You're on the channel. Start with discovery, then load a skill.</p>
+      <div class="firstcmds">
+        <div class="firstcmd">
+          <span class="firstcmd__tag mono">Discover the platform</span>
+          <code class="firstcmd__line">Use prd_suggest_stack for "an agent that remembers user preferences and stores files"</code>
+        </div>
+        <div class="firstcmd">
+          <span class="firstcmd__tag mono">Find a skill</span>
+          <code class="firstcmd__line">skill_search "turn a SOP into an automated system"</code>
+        </div>
+        <div class="firstcmd">
+          <span class="firstcmd__tag mono">Load a playbook</span>
+          <code class="firstcmd__line">skill_get prd-generator</code>
+        </div>
+      </div>
+      <a href="/tools" class="btn btn--ghost" style="margin-top:24px">Browse the full catalog <i data-lucide="arrow-right"></i></a>
+    </article>
+
+    <article class="doc-block" id="security">
+      <span class="doc-block__index mono">06</span>
+      <h2 class="doc-h2">Security model</h2>
+      <p>The portal at <code>/access</code> has two personas and a strict approval gate.</p>
+      <div class="secrows">
+        <div class="secrow"><i data-lucide="user-round"></i><div><h4>Users</h4><p>Register, verify email, manage profile and password, create &amp; revoke personal access tokens, and see approval status plus connection instructions.</p></div></div>
+        <div class="secrow"><i data-lucide="shield-check"></i><div><h4>Admins</h4><p>Approve or reject pending accounts, block / unblock, reset passwords, assign tracks, and elevate verified users to admin.</p></div></div>
+        <div class="secrow"><i data-lucide="lock"></i><div><h4>Default-closed</h4><p>New accounts are pending until approved. The first admin is seeded and must rotate its password on first login. Sessions are JWT-backed; tokens are revocable.</p></div></div>
+      </div>
+    </article>
+
+  </main>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <a href="/" class="wordmark" style="font-size:26px">8<span class="mk-accent">gen</span>C</a>
+        <p style="margin-top:16px;max-width:34ch;color:var(--text-muted);font-size:var(--fs-sm);line-height:var(--lh-body)">Fractional leadership, balanced with agentic execution. The MCP server is the channel that keeps execution on-standard.</p>
+        <div style="margin-top:20px"><span class="chip chip--ok"><span class="status-dot"></span> Operational</span></div>
+      </div>
+      <div class="footer-col"><h4>Connector</h4><ul><li><a href="/">Overview</a></li><li><a href="/docs">How to connect</a></li><li><a href="/tools">Tool catalog</a></li><li><a href="/#workflows">Workflows</a></li></ul></div>
+      <div class="footer-col"><h4>Access</h4><ul><li><a href="/access">Sign in</a></li><li><a href="/access">Request access</a></li><li><a href="/docs#auth">Auth methods</a></li><li><a href="/#status">System status</a></li></ul></div>
+      <div class="footer-col"><h4>Endpoint</h4><ul><li><a class="mono" href="#">mcp.8genc.com/mcp</a></li><li><a class="mono" href="/access">mcp.8genc.com/access</a></li><li><a class="mono" href="#">github · ai-8gent-skills</a></li><li><a class="mono" href="#">docs.ainative.studio</a></li></ul></div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 8genC · Model Context Protocol Endpoint</p>
+      <p>TLS 1.3 · OAuth 2.1 · Authorized personnel only</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/icons.js"></script>
+<script src="/site.js"></script>
+</body>
+</html>
