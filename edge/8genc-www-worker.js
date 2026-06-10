@@ -10,7 +10,7 @@
  *   • API Documentation       → /openapi.json
  *   • Machine-Readable        → /llms.txt (+ enriched /robots.txt)
  *   • Authentication Standards→ /.well-known/oauth-protected-resource (RFC 9728)
- *   • Error Handling          → JSON 404 for agents (Accept: */* or json)
+ *   • Error Handling          → JSON 404 for agents (non-HTML Accept)
  *   • Rate Limiting Headers   → RateLimit-* on every response
  *
  * (Structured Data + the MCP discovery <meta>/<link> tags are added separately
