@@ -100,7 +100,7 @@ a { color: inherit; }
 }
 .wordmark {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 2px;
   font-family: var(--font-display);
   font-weight: var(--fw-black);
@@ -110,6 +110,7 @@ a { color: inherit; }
   text-transform: lowercase;
   line-height: 1;
 }
+.wordmark__img { height: 22px; width: auto; display: block; }
 .wordmark b { color: var(--bone-100); }
 .wordmark .mk-accent { color: var(--signal-500); }
 .wordmark__sub {
