@@ -1,7 +1,9 @@
 /**
- * File-backed credential resolver, scoped per client. Reads the same files the dashboard
- * writes (under config.credentialsDir): the admin registry `orchestrator.mcp.json`, the system
- * `.env` (shared keys), and per-client `clients/<id>.env` (client-owned keys).
+ * Credential resolver, scoped per client. The admin registry is a committed, non-secret
+ * default (`registry.default.json`) overlaid with the dashboard-written
+ * `orchestrator.mcp.json` (gitignored) when present. Shared (agency) keys come from
+ * process.env (how Railway supplies secrets), with the system `.env` file overriding for
+ * local/dashboard use. Per-client `client-owned` keys come from `clients/<id>.env`.
  */
 import { join } from 'node:path';
 import { loadAdminToolConfig, loadEnvFile, resolveCredential, resolveSessionTools } from './engine.js';
@@ -10,8 +12,12 @@ import { config } from '../config.js';
 const sanitize = (id) => String(id).replace(/[^A-Za-z0-9_-]/g, '_');
 
 export function makeCredentialResolver(dir = config.credentialsDir) {
-  const admin = loadAdminToolConfig(join(dir, 'orchestrator.mcp.json'));
-  const adminEnv = loadEnvFile(join(dir, '.env'));
+  const defaults = loadAdminToolConfig(join(dir, 'registry.default.json'));
+  const override = loadAdminToolConfig(join(dir, 'orchestrator.mcp.json'));
+  const admin = { tools: { ...defaults.tools, ...override.tools } };
+  // pick() (engine.js) limits use to each tool's declared envKeys, so spreading process.env
+  // here can't leak unrelated vars; the system .env file overrides process.env when present.
+  const adminEnv = { ...process.env, ...loadEnvFile(join(dir, '.env')) };
   const clientEnvCache = new Map();
   const clientEnv = (clientId) => {
     if (!clientId) return {};

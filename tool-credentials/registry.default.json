@@ -1,0 +1,27 @@
+{
+  "_comment": "COMMITTED DEFAULT admin tool registry (no secrets — policy + env var NAMES + optional MCP launch only). The server's credential resolver loads this, then overlays the dashboard-written orchestrator.mcp.json (gitignored) when present. Shared-tool keys are supplied via the server's environment (e.g. DATAFORSEO_USERNAME/PASSWORD on Railway) or the system .env; client-owned keys come from each client's uploaded .env. Edit policies here for the prod default; the dashboard can override per deployment.",
+  "tools": {
+    "dataforseo": {
+      "policy": "shared",
+      "command": "npx",
+      "args": ["-y", "dataforseo-mcp-server"],
+      "envKeys": ["DATAFORSEO_USERNAME", "DATAFORSEO_PASSWORD"]
+    },
+    "coda": {
+      "policy": "shared",
+      "command": "npx",
+      "args": ["-y", "coda-mcp"],
+      "envKeys": ["CODA_API_KEY"]
+    },
+    "designer": { "policy": "shared", "command": "npx", "args": ["-y", "@pro-vi/designer"] },
+    "falai": { "policy": "shared", "envKeys": ["FAL_API_KEY"] },
+
+    "square-sdk": { "policy": "client-owned", "envKeys": ["SQUARE_ACCESS_TOKEN", "SQUARE_ENV", "SQUARE_LOCATION_ID"] },
+    "framer": { "policy": "client-owned", "envKeys": ["FRAMER_API_KEY", "FRAMER_PROJECT_URL"] },
+    "squarespace": { "policy": "client-owned", "envKeys": ["SQUARESPACE_API_KEY"] },
+    "canva": { "policy": "client-owned", "envKeys": ["CANVA_ACCESS_TOKEN"] },
+    "figma": { "policy": "client-owned", "envKeys": ["FIGMA_TOKEN"] },
+    "wordpress": { "policy": "client-owned", "envKeys": ["WORDPRESS_URL", "WORDPRESS_USER", "WORDPRESS_APP_PASSWORD"] },
+    "ghost": { "policy": "client-owned", "envKeys": ["GHOST_API_URL", "GHOST_ADMIN_API_KEY"] }
+  }
+}

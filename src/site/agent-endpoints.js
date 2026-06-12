@@ -29,7 +29,9 @@ const TOOLS = [
   { name: 'orchestration_guide', description: 'Orchestration spec + how to run it in your authenticated context' },
   { name: 'client_list', description: 'List the client tenants you can access' },
   { name: 'client_memory_store', description: "Persist context to a client's shared memory (membership-gated)" },
-  { name: 'client_memory_search', description: "Recall a client's shared memory (membership-gated)" }
+  { name: 'client_memory_search', description: "Recall a client's shared memory (membership-gated)" },
+  { name: 'tool_credentials_status', description: "Per-tool credential status for your client (shared vs client-owned)" },
+  { name: 'dataforseo_search_volume', description: "Google Ads search volume/CPC via DataForSEO, using your client's credentials" }
 ];
 
 export function mountAgentEndpoints(app, { serverName = '8genC MCP', version = '0.0.0' } = {}) {
