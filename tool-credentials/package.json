@@ -1,0 +1,19 @@
+{
+  "name": "@8genc/tool-credentials",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Multi-tenant tool-credential engine for the 8genc MCP server: admin defaults vs client-owned keys, .env-sourced, isolation-enforced. Ported from ai-8gent-skills PRs #21–#22.",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

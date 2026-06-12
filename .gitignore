@@ -6,3 +6,10 @@ node_modules/
 coverage/
 .nyc_output/
 web/dist/
+
+# Tool-credentials engine + dashboard (ported from ai-8gent-skills)
+dist/
+*.env
+!*.env.example
+tool-credentials/clients/
+tool-credentials/orchestrator.mcp.json
