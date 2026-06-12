@@ -22,6 +22,7 @@ import { SKILL_TOOLS, executeSkillTool } from './tools/skill-tools.js';
 import { ORCHESTRATION_TOOLS, executeOrchestrationTool } from './tools/orchestration-tools.js';
 import { CLIENT_TOOLS, executeClientTool } from './tools/client-tools.js';
 import { CREDENTIALS_TOOLS, executeCredentialsTool } from './tools/credentials-tools.js';
+import { DATAFORSEO_TOOLS, executeDataForSEOTool } from './tools/dataforseo-tools.js';
 import { makeCredentialResolver } from './credentials/resolver.js';
 import {
   resolveUser,
@@ -47,7 +48,8 @@ export const ALL_TOOLS = [
   ...SKILL_TOOLS,
   ...ORCHESTRATION_TOOLS,
   ...CLIENT_TOOLS,
-  ...CREDENTIALS_TOOLS
+  ...CREDENTIALS_TOOLS,
+  ...DATAFORSEO_TOOLS
 ];
 
 // File-backed tool-credential resolver (admin registry + system .env + per-client .env).
@@ -71,6 +73,7 @@ const SKILL_TOOL_NAMES = new Set(SKILL_TOOLS.map((t) => t.name));
 const ORCHESTRATION_TOOL_NAMES = new Set(ORCHESTRATION_TOOLS.map((t) => t.name));
 const CLIENT_TOOL_NAMES = new Set(CLIENT_TOOLS.map((t) => t.name));
 const CREDENTIALS_TOOL_NAMES = new Set(CREDENTIALS_TOOLS.map((t) => t.name));
+const DATAFORSEO_TOOL_NAMES = new Set(DATAFORSEO_TOOLS.map((t) => t.name));
 
 /**
  * @param {object} ctx
@@ -246,6 +249,15 @@ export function createMcpServer(ctx) {
         // caller's client, then report that client's per-tool credential status (no secrets).
         const accessible = await getAccessibleClients(user);
         result = await executeCredentialsTool(name, args || {}, ctx, {
+          clients: accessible,
+          resolveClientId: makeResolveClientId(user, accessible),
+          credentials: credentialResolver()
+        });
+      } else if (DATAFORSEO_TOOL_NAMES.has(name)) {
+        // External-API tool: resolve the caller's client, then resolve that client's
+        // DataForSEO credentials (shared agency key or the client's own) before the call.
+        const accessible = await getAccessibleClients(user);
+        result = await executeDataForSEOTool(name, args || {}, ctx, {
           clients: accessible,
           resolveClientId: makeResolveClientId(user, accessible),
           credentials: credentialResolver()
