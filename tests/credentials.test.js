@@ -2,9 +2,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { makeCredentialResolver } from '../src/credentials/resolver.js';
 import { executeCredentialsTool } from '../src/tools/credentials-tools.js';
+
+const REPO = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 function fixtureDir() {
   const dir = mkdtempSync(join(tmpdir(), 'cred-'));
@@ -66,6 +69,26 @@ test('tool_credentials_status returns no secrets and flags missing keys', async 
   assert.equal(byTool['square-sdk'].connected, true);
   assert.equal(byTool.framer.connected, false);
   assert.deepEqual(byTool.framer.missingKeys, ['FRAMER_API_KEY']);
+});
+
+test('prod path: committed default registry + shared keys from process.env (no .env file)', () => {
+  const prev = { u: process.env.DATAFORSEO_USERNAME, p: process.env.DATAFORSEO_PASSWORD };
+  process.env.DATAFORSEO_USERNAME = 'env-user';
+  process.env.DATAFORSEO_PASSWORD = 'env-pass';
+  try {
+    const cr = makeCredentialResolver(join(REPO, 'tool-credentials')); // committed registry.default.json, no .env
+    assert.ok(cr.tokens().includes('dataforseo'), 'default registry loaded');
+    const shared = cr.resolveForClient('any-client-uuid', ['dataforseo']);
+    assert.equal(shared.env.DATAFORSEO_USERNAME, 'env-user'); // shared → process.env key
+    assert.equal(shared.env.DATAFORSEO_PASSWORD, 'env-pass');
+    assert.equal(shared.unavailable.length, 0);
+    // client-owned with no client key stays unavailable (isolation) — no admin fallback
+    const owned = cr.resolveForClient('any-client-uuid', ['square-sdk']);
+    assert.deepEqual(owned.unavailable.map((u) => u.token), ['square-sdk']);
+  } finally {
+    if (prev.u === undefined) delete process.env.DATAFORSEO_USERNAME; else process.env.DATAFORSEO_USERNAME = prev.u;
+    if (prev.p === undefined) delete process.env.DATAFORSEO_PASSWORD; else process.env.DATAFORSEO_PASSWORD = prev.p;
+  }
 });
 
 test('tool_credentials_status denies an inaccessible client', async () => {

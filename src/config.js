@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 // Repo root (config.js lives in src/). Used to locate the tool-credentials config dir.
-const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 const bool = (v, dflt = false) =>
   v == null ? dflt : ['1', 'true', 'yes', 'on'].includes(String(v).toLowerCase());

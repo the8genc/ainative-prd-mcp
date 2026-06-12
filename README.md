@@ -83,7 +83,7 @@ Add to your Claude Code, Cursor, or Windsurf MCP config:
 }
 ```
 
-## Tools (14)
+## Tools (16)
 
 ### Platform Discovery (3 tools)
 
@@ -142,6 +142,22 @@ membership check is the boundary.
 
 When you can access exactly one client, its scope + recent memory is also auto-injected
 into skill/prompt context. Clients are provisioned and members assigned in the admin dashboard.
+
+### Tool credentials — per-client API keys (2 tools)
+
+External tools (DataForSEO, Coda, Square, …) carry a **policy**: `shared` (the agency's
+key, set in the server environment) or `client-owned` (each client supplies their own —
+the admin key is never used, so tenants never cross-pollinate). The registry of policies
+is `tool-credentials/registry.default.json` (committed, no secrets) overlaid by the
+dashboard's `orchestrator.mcp.json`. Shared keys come from env vars (e.g.
+`DATAFORSEO_USERNAME`/`DATAFORSEO_PASSWORD`); client-owned keys from each client's `.env`.
+
+| Tool | Description |
+|------|-------------|
+| `tool_credentials_status` | For your client, each tool's policy + whether it's connected (no secrets). |
+| `dataforseo_search_volume` | Google Ads search volume / CPC / competition, using your client's DataForSEO credentials. |
+
+Both are membership-gated like the client-memory tools. See [`docs/tool-credentials.md`](docs/tool-credentials.md).
 
 **Source of truth is the GitHub repo** (`SKILLS_REPO`, default
 [`the8genc/ai-8gent-skills`](https://github.com/the8genc/ai-8gent-skills)) laid out

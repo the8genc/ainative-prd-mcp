@@ -3,7 +3,7 @@
 This MCP server provides AINative platform discovery and a GitHub-backed Agent Skills library.
 PRD generation is delivered as the `prd-generator` Agent Skill (see below), not as server tools.
 
-## Available Tools (14)
+## Available Tools (16)
 
 ### Platform Discovery
 | Tool | Description |
@@ -44,6 +44,20 @@ A `client` is a tenant (admin-provisioned) with a shared data-scope + a dedicate
 ZeroDB memory namespace (`session:client-<id>`). Membership (`client_members`) is the
 wall: admins access all clients, others only assigned ones. When the caller has exactly
 one accessible client, its scope + recent memory auto-injects into skill prompts.
+
+### Tool credentials (per-client API keys)
+| Tool | Description |
+|------|-------------|
+| `tool_credentials_status` | Per-tool policy (shared/client-owned) + connected state for the caller's client (no secrets) |
+| `dataforseo_search_volume` | Google Ads search volume/CPC via DataForSEO, using the client's resolved credentials |
+
+Policy registry: `tool-credentials/registry.default.json` (committed default, no secrets)
+overlaid by the dashboard's `orchestrator.mcp.json`. `shared` keys come from server env
+(e.g. `DATAFORSEO_USERNAME`/`DATAFORSEO_PASSWORD`); `client-owned` from each client's `.env`
+(`tool-credentials/clients/<id>.env`, written by the dashboard). `src/credentials/` holds the
+engine + resolver; tools are membership-gated like client memory. NOTE: client-owned per-client
+keys need the dashboard on a persistent volume (Railway FS is ephemeral) — the SHARED path
+(env-var keys) is what works in prod today.
 
 Skills are also exposed as **MCP prompts** — each skill in the repo appears as a
 selectable prompt (name = skill slug) whose body is the `SKILL.md`. An optional
