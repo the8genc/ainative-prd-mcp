@@ -1,0 +1,17 @@
+{
+  "_comment": "CLIENT overrides — one file per client (e.g. clients/acme.json), gitignored. Run with `--client clients/acme.json`. Each client's own API keys override the admin's per tool. For `client-owned` tools this is REQUIRED (no admin fallback); for `shared` tools it's optional (client prefers their own). The run is scoped to this client, so its work only ever touches this client's resources.",
+
+  "clientId": "acme",
+  "overrides": {
+    "square-sdk": {
+      "env": { "SQUARE_ACCESS_TOKEN": "ACME_SQUARE_TOKEN", "SQUARE_ENV": "production", "SQUARE_LOCATION_ID": "ACME_LOC" }
+    },
+    "framer": {
+      "env": { "FRAMER_API_KEY": "ACME_FRAMER_KEY", "FRAMER_PROJECT_URL": "https://framer.com/projects/Acme--..." }
+    },
+    "dataforseo": {
+      "_note": "shared tool, but Acme prefers their own DataForSEO account",
+      "env": { "DATAFORSEO_USERNAME": "ACME_USER", "DATAFORSEO_PASSWORD": "ACME_PASS" }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+/* Design tokens — 8gentic-designer. The implementation source of truth (see ../../DESIGN.md). */
+:root {
+  /* Color */
+  --bg: #0f1729;
+  --surface: #16203a;
+  --surface-2: #1d2a47;
+  --border: #2a3a5e;
+  --text: #e7ecf5;
+  --muted: #9fb0cc;
+  --accent: #6366f1; /* indigo */
+  --accent-weak: #312e81;
+  --ok: #22c55e;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+
+  /* Type */
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --fs-1: 12px;
+  --fs-2: 14px;
+  --fs-3: 16px;
+  --fs-4: 22px;
+
+  /* Space / radius / shadow */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --radius: 8px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25);
+}

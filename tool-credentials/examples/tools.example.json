@@ -1,0 +1,28 @@
+{
+  "_comment": "ADMIN tool registry for the MCP server. Copy to orchestrator.mcp.json (gitignored). Each key is a tool token used in a skill's `tools:` list. `policy`: 'shared' = the agency key (from the system .env) is exposed to clients; 'client-owned' = each client MUST bring their own key via their uploaded .env (admin key never used → no cross-pollination). `envKeys` lists the env var NAMES the tool needs — values come from the system .env (shared) or the client .env (client-owned/override), NOT from this file. `command`/`args` (optional) launch an MCP server.",
+
+  "tools": {
+    "dataforseo": {
+      "policy": "shared",
+      "command": "npx",
+      "args": ["-y", "dataforseo-mcp-server"],
+      "envKeys": ["DATAFORSEO_USERNAME", "DATAFORSEO_PASSWORD"]
+    },
+    "coda": {
+      "policy": "shared",
+      "command": "npx",
+      "args": ["-y", "coda-mcp"],
+      "envKeys": ["CODA_API_KEY"]
+    },
+    "designer": { "policy": "shared", "command": "npx", "args": ["-y", "@pro-vi/designer"] },
+    "falai": { "policy": "shared", "envKeys": ["FAL_API_KEY"] },
+
+    "square-sdk": { "policy": "client-owned", "envKeys": ["SQUARE_ACCESS_TOKEN", "SQUARE_ENV", "SQUARE_LOCATION_ID"] },
+    "framer": { "policy": "client-owned", "envKeys": ["FRAMER_API_KEY", "FRAMER_PROJECT_URL"] },
+    "squarespace": { "policy": "client-owned", "envKeys": ["SQUARESPACE_API_KEY"] },
+    "canva": { "policy": "client-owned", "envKeys": ["CANVA_ACCESS_TOKEN"] },
+    "figma": { "policy": "client-owned", "envKeys": ["FIGMA_TOKEN"] },
+    "wordpress": { "policy": "client-owned", "envKeys": ["WORDPRESS_URL", "WORDPRESS_USER", "WORDPRESS_APP_PASSWORD"] },
+    "ghost": { "policy": "client-owned", "envKeys": ["GHOST_API_URL", "GHOST_ADMIN_API_KEY"] }
+  }
+}
