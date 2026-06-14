@@ -1,0 +1,56 @@
+name: Sync skill catalog
+
+# Auto-track the skills repo (the8genc/ai-8gent-skills): re-parse its README into
+# src/site/skills-catalog.json and re-render the /tools catalog. If anything changed,
+# commit to main — which Railway auto-deploys, so the site tracks the skills repo.
+#
+# Requires an Actions secret SKILLS_GITHUB_TOKEN: a read-only fine-grained PAT with
+# Contents:read on the8genc/ai-8gent-skills (the same token used on Railway). The repo
+# is private, so the workflow's own GITHUB_TOKEN cannot read it.
+
+on:
+  schedule:
+    - cron: '17 7 * * *' # daily, ~07:17 UTC
+  workflow_dispatch: {} # run on demand from the Actions tab
+  repository_dispatch:
+    types: [skills-updated] # optional: the skills repo can trigger this immediately
+
+permissions:
+  contents: write
+
+concurrency:
+  group: skills-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Sync catalog from the skills repo + render the site
+        env:
+          GH_TOKEN: ${{ secrets.SKILLS_GITHUB_TOKEN }} # gh api reads the private skills repo
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::SKILLS_GITHUB_TOKEN secret is not set — add a read-only PAT (Contents:read on the8genc/ai-8gent-skills) under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          node scripts/sync-skill-catalog.mjs
+          node scripts/render-skills.mjs
+
+      - name: Commit + push if the catalog changed
+        run: |
+          if git diff --quiet -- src/site/skills-catalog.json site/tools.html; then
+            echo "Skill catalog already up to date — nothing to commit."
+            exit 0
+          fi
+          git config user.name "8genc-skills-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add src/site/skills-catalog.json site/tools.html
+          git commit -m "chore(site): auto-sync skill catalog from ai-8gent-skills [skip ci]"
+          git push
+          echo "::notice::Skill catalog updated and pushed to main (Railway will redeploy)."
