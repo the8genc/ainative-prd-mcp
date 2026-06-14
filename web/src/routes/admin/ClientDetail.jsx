@@ -15,17 +15,26 @@ export default function ClientDetail() {
   const [files, setFiles] = useState([]);
   const [vars, setVars] = useState([]);
   const [notes, setNotes] = useState('');
+  // tool-credential state
+  const [creds, setCreds] = useState([]);       // [{token,policy,available,providedKeys,envKeys,...}]
+  const [credInput, setCredInput] = useState({}); // token -> pasted KEY=val text
+  const [credTest, setCredTest] = useState({});   // token -> { ok, detail }
 
   const load = useCallback(async () => {
     setErr('');
     try {
-      const [c, u] = await Promise.all([api.get(`/admin/clients/${id}`), api.get('/admin/users?status=approved')]);
+      const [c, u, cr] = await Promise.all([
+        api.get(`/admin/clients/${id}`),
+        api.get('/admin/users?status=approved'),
+        api.get(`/admin/clients/${id}/credentials`)
+      ]);
       setClient(c.client);
       setMembers(c.members);
       setAllUsers(u.users);
       setFiles(Array.isArray(c.client.coda_files) ? c.client.coda_files : []);
       setVars(Object.entries(c.client.variables || {}));
       setNotes(c.client.notes || '');
+      setCreds(cr.tools || []);
     } catch (e) { setErr(e.message); }
   }, [id]);
 
@@ -58,6 +67,29 @@ export default function ClientDetail() {
     setMsg(''); setErr('');
     try { const r = await api.del(`/admin/clients/${id}/members/${userId}`); setMembers(r.members); }
     catch (e) { setErr(e.message || 'Remove failed'); }
+  };
+
+  const saveCred = async (token) => {
+    setMsg(''); setErr('');
+    const envText = credInput[token] || '';
+    if (!envText.trim()) return;
+    try {
+      const r = await api.put(`/admin/clients/${id}/credentials/${token}`, { envText });
+      setCreds(r.tools); setCredInput((s) => ({ ...s, [token]: '' }));
+      setMsg(`${token} credentials saved (encrypted).`);
+    } catch (e) { setErr(e.message || 'Save failed'); }
+  };
+  const removeCred = async (token) => {
+    setMsg(''); setErr('');
+    try { const r = await api.del(`/admin/clients/${id}/credentials/${token}`); setCreds(r.tools); }
+    catch (e) { setErr(e.message || 'Remove failed'); }
+  };
+  const testCred = async (token) => {
+    setCredTest((s) => ({ ...s, [token]: { detail: 'testing…' } }));
+    try {
+      const r = await api.post(`/admin/clients/${id}/credentials/${token}/test`, {});
+      setCredTest((s) => ({ ...s, [token]: r.result }));
+    } catch (e) { setCredTest((s) => ({ ...s, [token]: { ok: false, detail: e.message } })); }
   };
 
   const memberIds = new Set(members.map((m) => m.id));
@@ -138,6 +170,45 @@ export default function ClientDetail() {
         <div style={{ marginTop: 'var(--space-4)' }}>
           <button className="btn btn--signal" onClick={saveScope}>Save data-scope</button>
         </div>
+      </div>
+
+      {/* Tool credentials */}
+      <div className="panel-block" style={{ marginTop: 'var(--space-4)' }}>
+        <h2 className="h-section" style={{ fontSize: 'var(--fs-lg)' }}>Tool credentials</h2>
+        <p className="mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)' }}>
+          <strong>shared</strong> tools use the agency key (no action). <strong>client-owned</strong> tools need this client's own keys — paste a <code>.env</code> (KEY=value per line); stored encrypted, never shown again.
+        </p>
+        {creds.map((t) => {
+          const owned = t.policy === 'client-owned';
+          const test = credTest[t.token];
+          return (
+            <div key={t.token} style={{ padding: '10px 0', borderBottom: '1px solid var(--hairline)' }}>
+              <div className="row" style={{ justifyContent: 'space-between' }}>
+                <span><code>{t.token}</code> <span className={`chip ${owned ? (t.available ? 'chip--ok' : 'chip--warn') : 'chip--signal'}`}>
+                  {owned ? (t.available ? 'connected' : 'not connected') : 'shared'}
+                </span></span>
+                <span className="mono" style={{ fontSize: 'var(--fs-2xs)', color: 'var(--text-faint)' }}>{(t.envKeys || []).join(', ') || 'no keys'}</span>
+              </div>
+              {owned && (
+                <div style={{ marginTop: 6 }}>
+                  <textarea
+                    rows={2} style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-2xs)' }}
+                    placeholder={`${(t.envKeys || []).map((k) => `${k}=…`).join('\n') || 'KEY=value'}`}
+                    value={credInput[t.token] || ''}
+                    onChange={(e) => setCredInput((s) => ({ ...s, [t.token]: e.target.value }))}
+                  />
+                  <div className="row" style={{ gap: 8, marginTop: 4 }}>
+                    <button className="iconbtn" onClick={() => saveCred(t.token)} disabled={!(credInput[t.token] || '').trim()}>Save keys</button>
+                    <button className="iconbtn" onClick={() => testCred(t.token)} disabled={!t.available}>Test connection</button>
+                    {t.available && <button className="iconbtn iconbtn--danger" onClick={() => removeCred(t.token)}>Remove</button>}
+                    {test && <span className="mono" style={{ fontSize: 'var(--fs-2xs)', color: test.ok ? 'var(--ok-500)' : 'var(--warn-500)' }}>{test.detail}</span>}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {creds.length === 0 && <p className="token-empty mono">Registry not loaded.</p>}
       </div>
     </>
   );

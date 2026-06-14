@@ -17,6 +17,10 @@ import * as emailTokens from '../db/repositories/emailTokens.js';
 import * as skillsCatalog from '../db/repositories/skillsCatalog.js';
 import * as skillAccess from '../db/repositories/skillAccess.js';
 import * as clients from '../db/repositories/clients.js';
+import * as toolCreds from '../db/repositories/toolCredentials.js';
+import { makeDbCredentialResolver } from '../credentials/resolver.js';
+import { testConnection } from '../credentials/test-connection.js';
+import { parse as parseEnv } from 'dotenv';
 import { syncCatalog } from '../skills/catalogSync.js';
 import { decideSlug } from '../auth/access.js';
 import { config } from '../config.js';
@@ -356,6 +360,71 @@ export function createPortalApiRouter({ oauth = null, skills = null } = {}) {
   router.delete('/admin/clients/:id/members/:userId', ...clientLoad(async (req, res, c) => {
     await clients.removeMember(c.id, req.params.userId);
     return ok(res, { members: await clients.listMembers(c.id) });
+  }));
+
+  // ── Admin: tool-credential registry (policies) ────────────────
+  const credResolver = makeDbCredentialResolver();
+  router.get('/admin/tool-registry', requireAdmin(), requirePasswordChange(), async (_req, res) => {
+    const reg = await toolCreds.listRegistry();
+    // For shared tools, note whether the agency keys are present in the server env (no values).
+    const tools = reg.map((t) => ({
+      token: t.token,
+      policy: t.policy,
+      envKeys: t.env_keys || [],
+      command: t.command || null,
+      sharedKeysPresent:
+        t.policy === 'shared' && (t.env_keys || []).length > 0
+          ? (t.env_keys || []).every((k) => process.env[k] !== undefined)
+          : null
+    }));
+    return ok(res, { tools });
+  });
+
+  const policySchema = z.object({ policy: z.enum(['shared', 'client-owned']) });
+  router.patch('/admin/tool-registry/:token', requireAdmin(), requirePasswordChange(), async (req, res) => {
+    const parsed = policySchema.safeParse(req.body);
+    if (!parsed.success) return fail(res, 400, 'invalid_input');
+    const row = await toolCreds.upsertRegistryTool(req.params.token, { policy: parsed.data.policy }, req.sessionUser.id);
+    return ok(res, { tool: row });
+  });
+
+  // ── Admin: per-client tool credentials (encrypted) ────────────
+  router.get('/admin/clients/:id/credentials', ...clientLoad(async (_req, res, c) =>
+    ok(res, { client: { id: c.id, slug: c.slug, name: c.name }, tools: await credResolver.statusForClient(c.id) })
+  ));
+
+  // Accept either { env: {KEY:val} } or { envText: "KEY=val\n..." } (an uploaded .env).
+  const credPutSchema = z.object({
+    env: z.record(z.string()).optional(),
+    envText: z.string().max(20000).optional()
+  });
+  router.put('/admin/clients/:id/credentials/:token', ...clientLoad(async (req, res, c) => {
+    const parsed = credPutSchema.safeParse(req.body);
+    if (!parsed.success) return fail(res, 400, 'invalid_input', { details: parsed.error.flatten() });
+    const reg = await toolCreds.listRegistry();
+    const tool = reg.find((t) => t.token === req.params.token);
+    if (!tool) return fail(res, 404, 'unknown_tool');
+    const env = { ...(parsed.data.envText ? parseEnv(parsed.data.envText) : {}), ...(parsed.data.env || {}) };
+    // Keep only the env var names this tool declares (avoid storing stray keys).
+    const allowed = new Set(tool.env_keys || []);
+    const filtered = Object.fromEntries(Object.entries(env).filter(([k]) => allowed.size === 0 || allowed.has(k)));
+    if (Object.keys(filtered).length === 0) return fail(res, 400, 'no_matching_keys', { expected: tool.env_keys || [] });
+    await toolCreds.setClientToolEnv(c.id, req.params.token, filtered, req.sessionUser.id);
+    return ok(res, { tools: await credResolver.statusForClient(c.id) });
+  }));
+
+  router.delete('/admin/clients/:id/credentials/:token', ...clientLoad(async (req, res, c) => {
+    await toolCreds.deleteClientToolEnv(c.id, req.params.token);
+    return ok(res, { tools: await credResolver.statusForClient(c.id) });
+  }));
+
+  router.post('/admin/clients/:id/credentials/:token/test', ...clientLoad(async (req, res, c) => {
+    const reg = await toolCreds.listRegistry();
+    const tool = reg.find((t) => t.token === req.params.token);
+    if (!tool) return fail(res, 404, 'unknown_tool');
+    const session = await credResolver.resolveForClient(c.id, [req.params.token]);
+    const result = await testConnection(req.params.token, session.env, tool.env_keys || []);
+    return ok(res, { result });
   }));
 
   // ── Self: my access (read-only) ───────────────────────────────
